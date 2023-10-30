@@ -1,19 +1,23 @@
 #include <Arduino.h>
 #include <FastLED.h>
+#include "config.h"
 
-// put function declarations here:
+// create leds in memory
 CRGB leds[68];
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  // init leds
+  FastLED.addLeds<WS2811,DATAPIN,GRB>(leds, NUMLEDS);
+  FastLED.show();
+
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  //test anim
+  static int pos = 0;
+  static byte hue = 0;
+  leds[pos++] = CHSV(hue++, 255, 255);
+  FastLED.show();
+  if(pos >= NUMLEDS) pos = 0;
+  delay(10);
 }
