@@ -2,15 +2,8 @@
 #include <Adafruit_NeoPixel.h>
 
 
-class Animator {
-    public:
-    Animator(Adafruit_NeoPixel* s);
-    void cylon();
-    void cycle();
+    void cylon(void* s);
+    void cycle(void* s);
     //void fireworks();
-    void fadeall(uint8_t dec);
-    void halloween();
-    private:
-    Adafruit_NeoPixel* strip;
-    byte speed = 100;
-};
+    void fadeall(Adafruit_NeoPixel* strip, uint8_t dec);
+    void halloween(void* s);

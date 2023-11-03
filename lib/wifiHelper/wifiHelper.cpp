@@ -86,7 +86,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       int red = strtoul(color.substring(0, 2).c_str(), NULL, 16);
       int green = strtoul(color.substring(2, 4).c_str(), NULL, 16);
       int blue = strtoul(color.substring(4).c_str(), NULL, 16);
-      strp->setAnimation("none");
       strp->setColor(red, green, blue);
     }
     if (msg.startsWith("a:")) {
@@ -123,4 +122,17 @@ void dataOnConnect() {
 void handleWiFi() {
   ArduinoOTA.handle();
   ws.cleanupClients();
+  if(!WiFi.isConnected()) {
+    strp->setPower(true);
+    strp->setColor(0, 0, 100);
+    if(wifiSetup(strp)) {
+      strp->setColor(0, 255, 0);
+      delay(1000);
+    }
+    else {
+      strp->setColor(255, 0, 0);
+      delay(1000);
+      ESP.restart();
+    }
+  }
 }

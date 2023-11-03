@@ -12,10 +12,12 @@ class AnimationHelper {
     void begin();
     void setColor(uint8_t r, uint8_t g, uint8_t b);
     void setColorHsv(uint16_t h, uint8_t s, uint8_t v);
+    void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho);
+    void setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho);
+    void showColor();
     void setAnimation(String a);
     void setBrightness(byte b);
     void setPower(bool p);
-    void update();
 
     bool getPower();
     byte getBrightness();
@@ -32,6 +34,5 @@ class AnimationHelper {
     bool power = true;
     byte brightness = 100;
     String animation = "none";
-    Animator* anim;
 };
 #endif

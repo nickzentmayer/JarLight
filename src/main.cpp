@@ -21,7 +21,8 @@ AnimationHelper strip(NUMLEDS, DATAPIN);
 
 
 void setup() {
-  //Serial.begin(115200);
+  Serial.begin(115200);
+  
   // init leds
   strip.begin();
   // init mpu6050, if failed stop program
@@ -29,22 +30,19 @@ void setup() {
   mpu.reset();
   pinMode(D3, INPUT);
   mpu.enableSleep(true); //sleep cuz int is wack
-  strip.setColor(255, 0, 0);Serial.println("nuh uh");
-  strip.update();
-  
+  strip.setColor(0, 0, 100, true);Serial.println("nuh uh");
   if(!wifiSetup(&strip)) {
     Serial.println("FAIL");
-    delay(5000);
+    strip.setColor(255, 0, 0, true);
+    delay(1000);
     esp_restart();
   }
-  strip.setColor(0, 255, 0);
-  strip.update();
+  strip.setColor(0, 255, 0, true);
   delay(1000);
-  strip.setColor(100, 100, 100);
+  strip.setColor(100, 100, 100, true);
 }
 
 void loop() {
-  //test anim
-  strip.update();
   handleWiFi();
+  Serial.println(pcTaskGetName(xTaskGetCurrentTaskHandle()));
 }
