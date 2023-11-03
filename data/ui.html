@@ -1,0 +1,237 @@
+<!----Shoutout to Tyler for 'letting' me use his css---->
+<!DOCTYPE html>
+<html>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head>
+        <style>
+            html{
+              display: block;
+              margin: 0;
+              text-align: center;
+              padding: 0;
+            }
+            body {
+            background-color: rgb(17, 17, 17);
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0%;
+            scroll-behavior: auto;
+            display: block;
+            align-content: center;
+            }
+            h1 {
+                color: red;
+            }
+            h3 {
+                color: red;
+            }
+            #static {
+                padding: 5%;
+            }
+            .switch {
+            position: relative;
+              display: inline-block;
+              width: 60px;
+              height: 34px;
+            }
+
+            /* Hide default HTML checkbox */
+            .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            }
+
+            /* The slider */
+            .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            }
+
+            #powerSwitch:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            }
+
+            input:checked + #powerSwitch {
+            background-color: #ff2b2b;
+            }
+
+            input:focus + #powerSwitch {
+            box-shadow: 0 0 1px #ff2b2b;
+            }
+
+            input:checked + #powerSwitch:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+            }
+            #powerSwitch.round {
+                border-radius: 34px;
+            }
+
+            #powerSwitch.round:before {
+              border-radius: 50%;
+            }
+            #animButtons {
+                background-color: #111111;
+                border-radius: 25px;
+                width: 75%;
+                max-width: 550px;
+                height: 50px;
+                border-color: #ff2b2b;
+                display: inline-flexbox;
+                box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: larger;
+                font-variant: bold;
+                color: #ffffff;
+                transition-duration: 0.4s;
+                margin: 0.5rem;
+            }
+            #animButtons:hover {
+                box-shadow: 0 12px 16px 0 rgba(255, 0, 0, 0.24), 0 17px 50px 0 rgba(255, 0, 0, 0.288);
+                background-color: #ff2b2b;
+            }
+            #animButtons:active {
+                background-color: #4d0e0e;
+                box-shadow: 0 5px #000000;
+                transform: translateY(4px);
+            }
+            #colorpicker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 3rem;
+            height: 3rem;
+            /* width: 2rem;
+            height: 2rem; */
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+          }
+          #colorpicker::-webkit-color-swatch {
+            border-radius: 10px;
+            border: none;
+          }
+          #bright {
+            -webkit-appearance: none;  /* Override default CSS styles */
+            appearance: none;
+            width: 75%; 
+            max-width: 550px;
+            height: 15px;
+            border-radius: 5px;
+            background: #d3d3d3; /* Grey background */
+            outline: none; /* Remove outline */
+            opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+            -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+            transition: opacity .2s;
+          }
+          #bright:hover {
+            opacity: 1; /* Fully shown on mouse-over */
+          }
+
+          /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+          #bright::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            height: 25px;
+            border-radius: 50%; 
+            width: 25px; /* Set a specific slider handle width */ /* Slider handle height */
+            background: #ff0000; /* Green background */
+            cursor: pointer; /* Cursor on hover */
+          }
+
+          #bright::-moz-range-thumb {
+            width: 25px; /* Set a specific slider handle width */
+            height: 25px;
+            border-radius: 50%; 
+            background: #ff0000; /* Green background */
+            cursor: pointer; /* Cursor on hover */
+          }
+          
+    </style>
+    </head>
+    
+    <body>
+        <h1>Jar Light</h1>
+        <div class="content">
+        <div id="power">
+            <label class="switch">
+            <input type="checkbox" id="powerSwitch" onclick="sendMsg('p:'+this.checked.toString())">
+            <span class="slider round" id="powerSwitch"></span>
+            </label>
+        </div>
+        <div class="slidecontainer">
+          <h3>Brightness:</h3>
+          <input type="range" min="5" max="255" value="100" id="bright" oninput="sendMsg('b:'+this.value.toString())">
+        </div>
+        <div id="static">
+            <h3 for="colorpicker">Color Picker:</h3>
+            <input type="color" id="colorpicker" value="#000000" style="position: relative; scale: 200%;" oninput="sendMsg('c:'+this.value.toString())"> 
+        </div>
+        <div id="animations">
+            <input type="button" value="Cylon" id="animButtons" onclick="sendMsg('a:cylon')">
+            <input type="button" value="Cycle" id="animButtons" onclick="sendMsg('a:cycle')">
+            <input type="button" value="Fireworks" id="animButtons" onclick="sendMsg('a:firework')">
+            <input type="button" value="Halloween" id="animButtons" onclick="sendMsg('a:halloween')">
+        </div>
+      </div>
+        <script>
+            var gateway = `ws://${window.location.hostname}/ws`;
+            var websocket;
+            var r = 0;
+            var g = 0;
+            var b = 0;
+            var chage = "r";
+            var hoverd = false;
+            function initWebSocket() {
+              console.log('Trying to open a WebSocket connection...');
+              websocket = new WebSocket(gateway);
+              websocket.onopen    = onOpen;
+              websocket.onclose   = onClose;
+              websocket.onmessage = onMessage; // <-- add this line
+            }
+            function onOpen(event) {
+              console.log('Connection opened');
+              //sendMsg('upd');
+            }
+          
+            function onClose(event) {
+              console.log('Connection closed');
+              setTimeout(initWebSocket, 2000);
+            }
+            function onMessage(event) {
+              console.log(event.data);
+                var topic = event.data.toString().substring(0,event.data.toString().indexOf(':'));
+                var value = event.data.toString().substring(event.data.toString().indexOf(':')+1);
+                console.log(topic + value)
+                if(topic == 'p') if(value == "1") document.getElementById('powerSwitch').checked = true;
+                if(topic == 'c') document.getElementById('colorpicker').value = value;
+                if(topic == 'b') document.getElementById('bright').value = value;
+              }
+            window.addEventListener('load', onLoad);
+            function onLoad(event) {
+              initWebSocket();
+              //document.getElementById('animButtons').onpointerover = changeColor();
+            }
+            
+            function sendMsg(msg){
+              websocket.send(msg);
+            }
+            
+          </script>
+    </body>
+</html>
