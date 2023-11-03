@@ -1,11 +1,17 @@
 #include "animations.h"
 
+SemaphoreHandle_t* xSemaphore;
+
+void setSemaphore(SemaphoreHandle_t* xSem) {
+  xSemaphore = xSem;
+}
 
 void cycle(void* s)  {
   Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
     static uint16_t fph;
     //strip->setPin(strip->getPin());
     for(;;) {
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     uint16_t hue = fph;
     for(int i = 0; i < strip->numPixels(); i++) {
       
@@ -14,7 +20,7 @@ void cycle(void* s)  {
     }
     fph += UINT16_MAX/(strip->numPixels()*10);
     strip->show();
-    //xTaskNotifyGive( xTaskGetHandle() );
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(1);
     }
 }
@@ -44,6 +50,7 @@ void cylon(void* s) {
   static uint16_t hue;
   //strip->setPin(strip->getPin());
   for(;;) {
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     // Set the i'th led to red 
     if(dir) strip->setPixelColor(pos--/2, strip->ColorHSV(hue++, 255, 255));
     else strip->setPixelColor(pos++/2, strip->ColorHSV(hue++, 255, 255));
@@ -56,6 +63,7 @@ void cylon(void* s) {
     // Wait a little bit before we loop around and do it again
     if(pos/2 >= strip->numPixels() - 1 || pos < 0) dir = !dir;
     strip->show();
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(1);
   }
 }
@@ -64,12 +72,14 @@ void halloween(void* s) {
   Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
   //strip->setPin(strip->getPin());
   for(;;) {
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
   for(int i = 0; i < 1; i++) {
     strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 125, 0));
     strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 0, 185));
   }
   fadeall(strip, 10);
   strip->show();
+  xSemaphoreGive(*xSemaphore);
   vTaskDelay(25);
   }
 }

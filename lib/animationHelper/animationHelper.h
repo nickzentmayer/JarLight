@@ -34,5 +34,6 @@ class AnimationHelper {
     bool power = true;
     byte brightness = 100;
     String animation = "none";
+    SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
 };
 #endif

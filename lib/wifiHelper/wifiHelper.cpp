@@ -86,7 +86,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       int red = strtoul(color.substring(0, 2).c_str(), NULL, 16);
       int green = strtoul(color.substring(2, 4).c_str(), NULL, 16);
       int blue = strtoul(color.substring(4).c_str(), NULL, 16);
-      strp->setColor(red, green, blue);
+      strp->setColor(red, green, blue, true);
     }
     if (msg.startsWith("a:")) {
       //ledColor(0,0,0);

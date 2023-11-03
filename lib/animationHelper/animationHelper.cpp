@@ -8,6 +8,7 @@ void AnimationHelper::begin() {
     strip = new Adafruit_NeoPixel(NLEDS, pin, NEO_GRB + NEO_KHZ800);
     strip->begin();
     strip->show();
+    setSemaphore(&xSemaphore);
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b) {
     color = strip->Color(r, g, b);
@@ -25,43 +26,50 @@ void AnimationHelper::setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho) {
 }
 void AnimationHelper::showColor() 
 {
-setAnimation("none");
+if(!animation.equals("none"))setAnimation("none");
 strip->fill(color);
 strip->show();
 }
 void AnimationHelper::setAnimation(String a) {
     animation = a;
-    xTaskHandle animTask = xTaskGetHandle("Animation Task");
-    if(animTask != NULL) vTaskDelete(animTask);
-    if (animation.equals("cycle"))
-    {
-        xTaskCreate(
-            cycle,
-            "Animation Task",
-            2048,
-            strip,
-            1,
-            NULL);
-    }
-    if (animation.equals("cylon"))
-    {
-        xTaskCreate(
-            cylon,
-            "Animation Task",
-            2048,
-            strip,
-            1,
-            NULL);
-    }
-    if (animation.equals("halloween"))
-    {
-        xTaskCreate(
-            halloween,
-            "Animation Task",
-            2048,
-            strip,
-            1,
-            NULL);
+        xTaskHandle animTask = xTaskGetHandle("Animation Task");
+        if(animTask != NULL) 
+        {
+            xSemaphoreTake( xSemaphore, portMAX_DELAY);
+            vTaskDelete(animTask);
+            xSemaphoreGive(xSemaphore);
+        }
+        if(!animation.equals("none")) {
+        if (animation.equals("cycle"))
+        {
+            xTaskCreate(
+                cycle,
+                "Animation Task",
+                2048,
+                strip,
+                1,
+                NULL);
+        }
+        if (animation.equals("cylon"))
+        {
+            xTaskCreate(
+                cylon,
+                "Animation Task",
+                2048,
+                strip,
+                1,
+                NULL);
+        }
+        if (animation.equals("halloween"))
+        {
+            xTaskCreate(
+                halloween,
+                "Animation Task",
+                2048,
+                strip,
+                1,
+                NULL);
+        }
     }
 }
 void AnimationHelper::setBrightness(byte b) {
@@ -90,7 +98,12 @@ void AnimationHelper::setPower(bool p) {
         else 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
-            if(animTask != NULL) vTaskSuspend(animTask);
+            if(animTask != NULL) 
+            {
+                xSemaphoreTake(xSemaphore, portMAX_DELAY);
+                vTaskSuspend(animTask);
+                xSemaphoreGive(xSemaphore);
+            }
         }
     }
 }

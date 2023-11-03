@@ -21,7 +21,7 @@ AnimationHelper strip(NUMLEDS, DATAPIN);
 
 
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
   
   // init leds
   strip.begin();
@@ -44,5 +44,4 @@ void setup() {
 
 void loop() {
   handleWiFi();
-  Serial.println(pcTaskGetName(xTaskGetCurrentTaskHandle()));
 }
