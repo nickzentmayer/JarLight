@@ -1,8 +1,9 @@
 <!----Shoutout to Tyler for 'letting' me use his css---->
 <!DOCTYPE html>
 <html>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, display=standalone">
     <head>
+      <link rel="manifest" href="manifest.json" />
         <style>
             html{
               display: block;
@@ -23,6 +24,9 @@
             }
             h3 {
                 color: red;
+            }
+            p {
+              color: red;
             }
             #static {
                 padding: 5%;
@@ -168,7 +172,12 @@
     <body>
         <h1>Jar Light</h1>
         <div class="content">
+          <div id="battery">
+            <h3>Battery:</h3>
+            <p id="batP">100%</p>
+          </div>
         <div id="power">
+          <h3>Power</h3>
             <label class="switch">
             <input type="checkbox" id="powerSwitch" onclick="sendMsg('p:'+this.checked.toString())">
             <span class="slider round" id="powerSwitch"></span>
@@ -221,6 +230,7 @@
                 if(topic == 'p') if(value == "1") document.getElementById('powerSwitch').checked = true;
                 if(topic == 'c') document.getElementById('colorpicker').value = value;
                 if(topic == 'b') document.getElementById('bright').value = value;
+                if(topic == 'batt') document.getElementById('batP').innerHTML = value + "%";
               }
             window.addEventListener('load', onLoad);
             function onLoad(event) {

@@ -5,10 +5,23 @@ AsyncWebSocket ws("/ws");
 AnimationHelper* strp;
 
 bool wifiSetup(AnimationHelper* s) {
+    pinMode(BATTPIN, INPUT);
     if(!SPIFFS.begin(true)) return false;
+    WiFi.mode(WIFI_STA);
+    WiFi.setHostname(DEVICE_NAME);
     WiFi.begin(SSID, PSWD);
     long t = millis();
-    if(WiFi.waitForConnectResult() != WL_CONNECTED) return false;
+    if(WiFi.waitForConnectResult() != WL_CONNECTED) {
+      if(USE_SOFT_AP) {
+        WiFi.mode(WIFI_AP_STA);
+        #ifdef SOFTAP_PSWD
+        WiFi.softAP(SOFTAP_SSID, SOFTAP_PSWD);
+        #else
+        WiFI.softAP(SOFTAP_SSID);
+        #endif
+      }
+      else return false;
+    }
     ArduinoOTA
     .onStart([]() {
       String type;
@@ -36,8 +49,9 @@ bool wifiSetup(AnimationHelper* s) {
     });
 
   ArduinoOTA.begin();
-  MDNS.begin("jarlight");
+  MDNS.begin(DEVICE_NAME);
   server.on("/", handleIndex);
+  server.onNotFound(sendFile);
   server.begin();
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
@@ -49,6 +63,9 @@ bool wifiSetup(AnimationHelper* s) {
 
 void handleIndex(AsyncWebServerRequest *req) {
     req->send(SPIFFS, "/ui.html", "text/html");
+}
+void sendFile(AsyncWebServerRequest *req) {
+    req->send(SPIFFS, req->url(), "file");
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -117,9 +134,25 @@ void dataOnConnect() {
             index += String(b, HEX);
       ws.textAll("c:#"+index);
       ws.textAll("b:"+String(strp->getBrightness()));
+      sendBattery();
+}
+
+void sendBattery() {
+  int battVolt = analogReadMilliVolts(BATTPIN)*2;
+  if(strp->getPower()) {
+    battVolt += map(strp->getBrightness(), 5, 255, 1, 100);
+  }
+  if(battVolt > 4100) battVolt = 4100;
+  int percent = map(battVolt, 3200, 4100, 0, 20) * 5;
+  ws.textAll("batt:" + String(percent));
 }
 
 void handleWiFi() {
+  static unsigned long t = millis();
+  if(millis() - t > 10000) {
+    sendBattery();
+    t = millis();
+  }
   ArduinoOTA.handle();
   ws.cleanupClients();
   if(!WiFi.isConnected()) {

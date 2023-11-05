@@ -1,0 +1,9 @@
+{
+    "name": "Jar Light",
+    "short_name": "Jar Light",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#101010",
+    "description": "Controller for Jar Light"
+  }
+  

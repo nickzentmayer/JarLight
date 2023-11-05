@@ -7,6 +7,7 @@ AnimationHelper::AnimationHelper(int n, uint8_t p) {
 void AnimationHelper::begin() {
     strip = new Adafruit_NeoPixel(NLEDS, pin, NEO_GRB + NEO_KHZ800);
     strip->begin();
+    strip->setBrightness(brightness);
     strip->show();
     setSemaphore(&xSemaphore);
 }
@@ -28,6 +29,7 @@ void AnimationHelper::showColor()
 {
 if(!animation.equals("none"))setAnimation("none");
 strip->fill(color);
+if(!power) return;
 strip->show();
 }
 void AnimationHelper::setAnimation(String a) {
@@ -71,11 +73,12 @@ void AnimationHelper::setAnimation(String a) {
                 NULL);
         }
     }
+    setPower(power);
 }
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
     strip->setBrightness(brightness);
-    if(animation.equals("none")) showColor();
+    if(animation.equals("none") && power) showColor();
 }
 void AnimationHelper::setPower(bool p) {
     power = p;
@@ -90,12 +93,7 @@ void AnimationHelper::setPower(bool p) {
     }
     else 
     {
-        if(animation.equals("none")) 
-        {
-            strip->fill(0);
-            strip->show();
-        }
-        else 
+        if(!animation.equals("none")) 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
             if(animTask != NULL) 
@@ -105,6 +103,8 @@ void AnimationHelper::setPower(bool p) {
                 xSemaphoreGive(xSemaphore);
             }
         }
+        strip->fill(0);
+        strip->show();
     }
 }
 
