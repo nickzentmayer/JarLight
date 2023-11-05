@@ -8,7 +8,7 @@ void setSemaphore(SemaphoreHandle_t* xSem) {
 
 void cycle(void* s)  {
   Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
-    static uint16_t fph;
+    uint16_t fph;
     //strip->setPin(strip->getPin());
     for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
@@ -45,9 +45,9 @@ void fadeall(Adafruit_NeoPixel* strip, byte dec) {
 
 void cylon(void* s) {
   Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
-  static bool dir;
-  static int pos;
-  static uint16_t hue;
+  bool dir;
+  int pos;
+  uint16_t hue;
   //strip->setPin(strip->getPin());
   for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
