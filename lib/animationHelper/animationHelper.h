@@ -10,10 +10,9 @@ class AnimationHelper {
     AnimationHelper(int n, uint8_t p);
 
     void begin();
-    void setColor(uint8_t r, uint8_t g, uint8_t b);
-    void setColorHsv(uint16_t h, uint8_t s, uint8_t v);
-    void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho);
-    void setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho);
+    void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
+    void setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho = false);
+    void setColor(uint32_t c, bool sho = false);
     void showColor();
     void setAnimation(String a);
     void setBrightness(byte b);

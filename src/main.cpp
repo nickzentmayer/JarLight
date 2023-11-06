@@ -23,13 +23,13 @@ AnimationHelper strip(NUMLEDS, DATAPIN);
 
 
 void setup() {
-  //Serial.begin(115200);
+  Serial.begin(115200);
   
   // init leds
   strip.begin();
   // init mpu6050, if failed stop program
   //if(mpu.begin()) while(1) delay(100);
-  mpu.setupInt();
+  //mpu.setupInt();
   pinMode(MPUINT, INPUT);
   pinMode(BATTPIN, INPUT);
   //mpu.enableSleep(true); //sleep cuz int is wack
@@ -37,10 +37,9 @@ void setup() {
   if(!wifiSetup(&strip)) {
     Serial.println("FAIL");
     strip.setColor(255, 0, 0, true);
-    delay(1000);
     if (!USE_SOFT_AP)
       {
-        delay(1000);
+        delay(5000);
         ESP.restart();
       }
   }

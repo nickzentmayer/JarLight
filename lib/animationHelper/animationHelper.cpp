@@ -9,13 +9,8 @@ void AnimationHelper::begin() {
     strip->begin();
     strip->setBrightness(brightness);
     strip->show();
+    setColor(100, 100, 100);
     setSemaphore(&xSemaphore);
-}
-void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b) {
-    color = strip->Color(r, g, b);
-}
-void AnimationHelper::setColorHsv(uint16_t h, uint8_t s, uint8_t v) {
-    color = strip->ColorHSV(h, s, v);
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
     color = strip->Color(r, g, b);
@@ -23,6 +18,10 @@ void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
 }
 void AnimationHelper::setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho) {
     color = strip->ColorHSV(h, s, v);
+    if(sho) showColor();
+}
+void AnimationHelper::setColor(uint32_t c, bool sho) {
+    color = c;
     if(sho) showColor();
 }
 void AnimationHelper::showColor() 

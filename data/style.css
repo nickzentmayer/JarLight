@@ -1,4 +1,4 @@
-            html {
+html {
                 display: block;
                 margin: 0;
                 text-align: center;
@@ -120,7 +120,7 @@
             }
 
             #recon {
-                display: inline;
+                display: none;
             }
 
             #colorpicker {

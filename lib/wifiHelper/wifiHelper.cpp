@@ -3,27 +3,21 @@
 AsyncWebServer server(PORT);
 AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
+bool recon = false;
 
-
-bool wifiSetup(AnimationHelper *s)
-{
-  //end all running servives
-  server.end();
-  ws.closeAll();
-  ArduinoOTA.end();
-  MDNS.end();
-  //start wifi setup
-  Serial.println("wifi setup");
+bool wifiConnect(bool showLeds) {
+  Serial.println("wifi connect");
+  uint32_t c = strp->getColor();
   bool res = true;
-  pinMode(BATTPIN, INPUT);
-  SPIFFS.begin(true);
+  if(showLeds) {
+    strp->setColor(0x000055, true);
+  }
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(DEVICE_NAME);
   WiFi.begin(SSID, PSWD);
-  long t = millis();
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
-    res = false;
+    if(showLeds) strp->setColor(0xFF0000, true);
     if (USE_SOFT_AP)
     {
       WiFi.mode(WIFI_AP);
@@ -33,9 +27,25 @@ bool wifiSetup(AnimationHelper *s)
       WiFI.softAP(SOFTAP_SSID);
 #endif
     }
-    else
-      return false;
+    res = false;
   }
+  if(showLeds) {
+    if(res) strp->setColor(0x00FF00, true);
+    delay(2000);
+    strp->setColor(c, true);
+  }
+  return res;
+}
+
+bool wifiSetup(AnimationHelper *s)
+{
+  //start wifi setup
+  strp = s;
+  Serial.println("wifi setup");
+  bool res = true;
+  pinMode(BATTPIN, INPUT);
+  SPIFFS.begin(true);
+  res = wifiConnect(false);
   ArduinoOTA
       .onStart([]()
                {
@@ -69,7 +79,6 @@ bool wifiSetup(AnimationHelper *s)
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
 
-  strp = s;
   return res;
 }
 
@@ -141,7 +150,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
     if (msg.startsWith("w:"))
     {
       if (msg.substring(msg.indexOf(":") + 1).equals("recon")) {
-        wifiSetup(strp);
+        recon = true;
       }
     }
     //dataOnConnect();
@@ -196,21 +205,14 @@ void handleWiFi()
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
   {
-    strp->setPower(true);
-    strp->setColor(0, 0, 100);
-    if (wifiSetup(strp))
-    {
-      strp->setColor(0, 255, 0);
-      delay(1000);
-    }
-    else
-    {
-      strp->setColor(255, 0, 0);
-      if (!USE_SOFT_AP)
+    if (!USE_SOFT_AP)
       {
-        delay(1000);
-        ESP.restart();
+        if(!wifiConnect(true)) delay(5000);
       }
-    }
+      else wifiConnect(true);
+  }
+  if(recon) {
+    wifiConnect(true);
+    recon = false;
   }
 }
