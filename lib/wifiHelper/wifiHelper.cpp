@@ -2,28 +2,43 @@
 
 AsyncWebServer server(PORT);
 AsyncWebSocket ws("/ws");
-AnimationHelper* strp;
+AnimationHelper *strp;
 
-bool wifiSetup(AnimationHelper* s) {
-    pinMode(BATTPIN, INPUT);
-    if(!SPIFFS.begin(true)) return false;
-    WiFi.mode(WIFI_STA);
-    WiFi.setHostname(DEVICE_NAME);
-    WiFi.begin(SSID, PSWD);
-    long t = millis();
-    if(WiFi.waitForConnectResult() != WL_CONNECTED) {
-      if(USE_SOFT_AP) {
-        WiFi.mode(WIFI_AP_STA);
-        #ifdef SOFTAP_PSWD
-        WiFi.softAP(SOFTAP_SSID, SOFTAP_PSWD);
-        #else
-        WiFI.softAP(SOFTAP_SSID);
-        #endif
-      }
-      else return false;
+
+bool wifiSetup(AnimationHelper *s)
+{
+  //end all running servives
+  server.end();
+  ws.closeAll();
+  ArduinoOTA.end();
+  MDNS.end();
+  //start wifi setup
+  Serial.println("wifi setup");
+  bool res = true;
+  pinMode(BATTPIN, INPUT);
+  SPIFFS.begin(true);
+  WiFi.mode(WIFI_STA);
+  WiFi.setHostname(DEVICE_NAME);
+  WiFi.begin(SSID, PSWD);
+  long t = millis();
+  if (WiFi.waitForConnectResult() != WL_CONNECTED)
+  {
+    res = false;
+    if (USE_SOFT_AP)
+    {
+      WiFi.mode(WIFI_AP);
+#ifdef SOFTAP_PSWD
+      WiFi.softAP(SOFTAP_SSID, SOFTAP_PSWD);
+#else
+      WiFI.softAP(SOFTAP_SSID);
+#endif
     }
-    ArduinoOTA
-    .onStart([]() {
+    else
+      return false;
+  }
+  ArduinoOTA
+      .onStart([]()
+               {
       String type;
       if (ArduinoOTA.getCommand() == U_FLASH)
         type = "sketch";
@@ -31,22 +46,19 @@ bool wifiSetup(AnimationHelper* s) {
         type = "filesystem";
 
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
-    })
-    .onEnd([]() {
-      Serial.println("\nEnd");
-    })
-    .onProgress([](unsigned int progress, unsigned int total) {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    })
-    .onError([](ota_error_t error) {
+      Serial.println("Start updating " + type); })
+      .onEnd([]()
+             { Serial.println("\nEnd"); })
+      .onProgress([](unsigned int progress, unsigned int total)
+                  { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); })
+      .onError([](ota_error_t error)
+               {
       Serial.printf("Error[%u]: ", error);
       if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
       else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
       else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
       else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-      else if (error == OTA_END_ERROR) Serial.println("End Failed");
-    });
+      else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
 
   ArduinoOTA.begin();
   MDNS.begin(DEVICE_NAME);
@@ -58,114 +70,147 @@ bool wifiSetup(AnimationHelper* s) {
   MDNS.addService("http", "tcp", PORT);
 
   strp = s;
-  return true;
+  return res;
 }
 
-void handleIndex(AsyncWebServerRequest *req) {
-    req->send(SPIFFS, "/ui.html", "text/html");
+void handleIndex(AsyncWebServerRequest *req)
+{
+  req->send(SPIFFS, "/ui.html", "text/html");
 }
-void sendFile(AsyncWebServerRequest *req) {
-    req->send(SPIFFS, req->url(), "file");
+void sendFile(AsyncWebServerRequest *req)
+{
+  req->send(SPIFFS, req->url(), "file");
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-             void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      dataOnConnect();
-      break;
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
-      break;
-    case WS_EVT_DATA:
-      handleWebSocketMessage(arg, data, len);
-      break;
-    case WS_EVT_PONG:
+               void *arg, uint8_t *data, size_t len)
+{
+  switch (type)
+  {
+  case WS_EVT_CONNECT:
+    Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+    dataOnConnect();
     break;
-    case WS_EVT_ERROR:
-      break;
+  case WS_EVT_DISCONNECT:
+    Serial.printf("WebSocket client #%u disconnected\n", client->id());
+    break;
+  case WS_EVT_DATA:
+    handleWebSocketMessage(arg, data, len);
+    break;
+  case WS_EVT_PONG:
+    break;
+  case WS_EVT_ERROR:
+    break;
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
+{
+  AwsFrameInfo *info = (AwsFrameInfo *)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+  {
     data[len] = 0;
-    String msg = String((char*)data);
-    if (msg.startsWith("p:")) {
-      //power = msg.substring(msg.indexOf(":")+1).equals("true");
-      //if(animation.equals("none")) upd = true;
-      strp->setPower(msg.substring(msg.indexOf(":")+1).equals("true"));
+    String msg = String((char *)data);
+    if (msg.startsWith("p:"))
+    {
+      // power = msg.substring(msg.indexOf(":")+1).equals("true");
+      // if(animation.equals("none")) upd = true;
+      strp->setPower(msg.substring(msg.indexOf(":") + 1).equals("true"));
     }
-    if (msg.startsWith("c:")) {
-      String color = msg.substring(msg.indexOf(":")+2);
+    if (msg.startsWith("c:"))
+    {
+      String color = msg.substring(msg.indexOf(":") + 2);
       int red = strtoul(color.substring(0, 2).c_str(), NULL, 16);
       int green = strtoul(color.substring(2, 4).c_str(), NULL, 16);
       int blue = strtoul(color.substring(4).c_str(), NULL, 16);
       strp->setColor(red, green, blue, true);
     }
-    if (msg.startsWith("a:")) {
-      //ledColor(0,0,0);
-      //lAnim = animation;
-      strp->setAnimation(msg.substring(msg.indexOf(":")+1));
+    if (msg.startsWith("a:"))
+    {
+      // ledColor(0,0,0);
+      // lAnim = animation;
+      strp->setAnimation(msg.substring(msg.indexOf(":") + 1));
     }
-    if (msg.startsWith("b:")) {
-      //brightness = msg.substring(msg.indexOf(":")+1).toInt();
-      //FastLED.setBrightness(brightness);
-      //upd = animation.equals("none");
-      strp->setBrightness(msg.substring(msg.indexOf(":")+1).toInt());
+    if (msg.startsWith("b:"))
+    {
+      // brightness = msg.substring(msg.indexOf(":")+1).toInt();
+      // FastLED.setBrightness(brightness);
+      // upd = animation.equals("none");
+      strp->setBrightness(msg.substring(msg.indexOf(":") + 1).toInt());
     }
+    if (msg.startsWith("w:"))
+    {
+      if (msg.substring(msg.indexOf(":") + 1).equals("recon")) {
+        wifiSetup(strp);
+      }
+    }
+    //dataOnConnect();
   }
 }
 
-void dataOnConnect() {
-    ws.textAll("Hello");
-    byte r = strp->getColor() >> 16;
-    byte g = strp->getColor() >> 8;
-    byte b = strp->getColor();
-        ws.textAll("p:"+String(strp->getPower()));
-      String index;
-      if(r < 10) index += "0";
-            index += String(r, HEX);
-            if(g < 10) index += "0";
-            index += String(g, HEX);
-            if(b < 10) index += "0";
-            index += String(b, HEX);
-      ws.textAll("c:#"+index);
-      ws.textAll("b:"+String(strp->getBrightness()));
-      sendBattery();
+void dataOnConnect()
+{
+  byte r = strp->getColor() >> 16;
+  byte g = strp->getColor() >> 8;
+  byte b = strp->getColor();
+  ws.textAll("p:" + String(strp->getPower()));
+  String index;
+  if (r < 10)
+    index += "0";
+  index += String(r, HEX);
+  if (g < 10)
+    index += "0";
+  index += String(g, HEX);
+  if (b < 10)
+    index += "0";
+  index += String(b, HEX);
+  ws.textAll("c:#" + index);
+  ws.textAll("b:" + String(strp->getBrightness()));
+  if(WiFi.getMode() == WIFI_AP)ws.textAll("w:AP");
+  else ws.textAll("w:STA");
+  sendBattery();
 }
 
-void sendBattery() {
-  int battVolt = analogReadMilliVolts(BATTPIN)*2;
-  if(strp->getPower()) {
+void sendBattery()
+{
+  int battVolt = analogReadMilliVolts(BATTPIN) * 2;
+  if (strp->getPower())
+  {
     battVolt += map(strp->getBrightness(), 5, 255, 1, 100);
   }
-  if(battVolt > 4100) battVolt = 4100;
+  if (battVolt > 4100)
+    battVolt = 4100;
   int percent = map(battVolt, 3200, 4100, 0, 20) * 5;
   ws.textAll("batt:" + String(percent));
 }
 
-void handleWiFi() {
+void handleWiFi()
+{
   static unsigned long t = millis();
-  if(millis() - t > 10000) {
+  if (millis() - t > 10000)
+  {
     sendBattery();
     t = millis();
   }
   ArduinoOTA.handle();
   ws.cleanupClients();
-  if(!WiFi.isConnected()) {
+  if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
+  {
     strp->setPower(true);
     strp->setColor(0, 0, 100);
-    if(wifiSetup(strp)) {
+    if (wifiSetup(strp))
+    {
       strp->setColor(0, 255, 0);
       delay(1000);
     }
-    else {
+    else
+    {
       strp->setColor(255, 0, 0);
-      delay(1000);
-      ESP.restart();
+      if (!USE_SOFT_AP)
+      {
+        delay(1000);
+        ESP.restart();
+      }
     }
   }
 }

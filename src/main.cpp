@@ -38,9 +38,13 @@ void setup() {
     Serial.println("FAIL");
     strip.setColor(255, 0, 0, true);
     delay(1000);
-    esp_restart();
+    if (!USE_SOFT_AP)
+      {
+        delay(1000);
+        ESP.restart();
+      }
   }
-  strip.setColor(0, 255, 0, true);
+  else strip.setColor(0, 255, 0, true);
   delay(1000);
   strip.setColor(100, 100, 100, true);
 }
