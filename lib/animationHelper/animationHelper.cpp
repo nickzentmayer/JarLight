@@ -71,6 +71,16 @@ void AnimationHelper::setAnimation(String a) {
                 1,
                 NULL);
         }
+        if (animation.equals("fall"))
+        {
+            xTaskCreate(
+                fall,
+                "Animation Task",
+                2048,
+                strip,
+                1,
+                NULL);
+        }
     }
     setPower(power);
 }

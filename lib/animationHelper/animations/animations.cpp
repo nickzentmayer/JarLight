@@ -74,12 +74,42 @@ void halloween(void* s) {
   for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
   for(int i = 0; i < 1; i++) {
-    strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 125, 0));
+    strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 85, 0));
     strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 0, 185));
   }
   fadeall(strip, 10);
   strip->show();
   xSemaphoreGive(*xSemaphore);
-  vTaskDelay(25);
+  vTaskDelay(50);
+  }
+}
+
+void fall(void* s) {
+  Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    for(int i = 0; i < 1; i++) {
+      switch (random(3))
+      {
+        case 0:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 150, 0));
+          break;
+        case 1:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 85, 0));
+          break;
+        case 2:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 0, 0));
+        break;
+      default:
+        break;
+      }
+    
+    
+    
+  }
+    fadeall(strip, 15);
+    strip->show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(50);
   }
 }
