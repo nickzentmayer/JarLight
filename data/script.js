@@ -30,6 +30,7 @@ function onMessage(event) {
         if(value == 'AP') document.getElementById('recon').style.display = "inline";
         if(value == 'STA') document.getElementById('recon').style.display = "none";
     }
+    if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
 }
 window.addEventListener('load', onLoad);
 function onLoad(event) {

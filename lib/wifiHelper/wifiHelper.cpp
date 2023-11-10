@@ -13,7 +13,6 @@ bool wifiConnect(bool showLeds) {
     strp->setColor(0x000055, true);
   }
   WiFi.mode(WIFI_STA);
-  WiFi.setHostname(DEVICE_NAME);
   WiFi.begin(SSID, PSWD);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
@@ -22,7 +21,12 @@ bool wifiConnect(bool showLeds) {
     {
       WiFi.mode(WIFI_AP);
 #ifdef SOFTAP_PSWD
+#ifdef SOFTAP_SSID
       WiFi.softAP(SOFTAP_SSID, SOFTAP_PSWD);
+#else
+    WiFi.softAP(DEVICE_NAME, SOFTAP_PSWD);
+#endif
+
 #else
       WiFI.softAP(SOFTAP_SSID);
 #endif
@@ -71,7 +75,11 @@ bool wifiSetup(AnimationHelper *s)
       else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
 
   ArduinoOTA.begin();
-  MDNS.begin(DEVICE_NAME);
+  String name = DEVICE_NAME;
+  name.toLowerCase();
+  while(name.indexOf(' ') > 0) name.remove(name.indexOf(' '));
+  MDNS.begin(name);
+  WiFi.setHostname(DEVICE_NAME);
   server.on("/", handleIndex);
   server.onNotFound(sendFile);
   server.begin();
@@ -178,6 +186,7 @@ void dataOnConnect()
   if(WiFi.getMode() == WIFI_AP)ws.textAll("w:AP");
   else ws.textAll("w:STA");
   sendBattery();
+  ws.textAll("n:" + String(DEVICE_NAME));
 }
 
 void sendBattery()
