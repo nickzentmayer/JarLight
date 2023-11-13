@@ -10,7 +10,6 @@ void AnimationHelper::begin() {
     strip->setBrightness(brightness);
     strip->show();
     setColor(100, 100, 100);
-    setSemaphore(&xSemaphore);
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
     color = strip->Color(r, g, b);
@@ -26,74 +25,63 @@ void AnimationHelper::setColor(uint32_t c, bool sho) {
 }
 void AnimationHelper::showColor() 
 {
-if(!animation.equals("none"))setAnimation("none");
+if(!animation == -1)setAnimation(-1);
 strip->fill(color);
 if(!power) return;
 strip->show();
 }
-void AnimationHelper::setAnimation(String a) {
+void AnimationHelper::addAnimation(String name, animPtr anim) {
+    
+    if(animations != NULL) {
+        animPtr *oldAnims = animations;
+        String *oldNames = animNames;
+        animations = new animPtr[++numAnims];
+        animNames = new String[numAnims];
+        for(int i = 0; i < numAnims - 1; i++) {
+            animations[i] = oldAnims[i];
+            animNames[i] = oldNames[i];
+        }
+        animations[numAnims - 1] = anim;
+        animNames[numAnims - 1] = name;
+        delete oldAnims;
+        delete oldNames;
+    }
+    else {
+        animations = new animPtr[++numAnims];
+        animNames = new String[numAnims];
+        animations[0] = anim;
+    }
+}
+void AnimationHelper::setAnimation(int a) {
     animation = a;
         xTaskHandle animTask = xTaskGetHandle("Animation Task");
         if(animTask != NULL) 
         {
-            xSemaphoreTake( xSemaphore, portMAX_DELAY);
+            xSemaphoreTake(xSemaphore, portMAX_DELAY);
             vTaskDelete(animTask);
             xSemaphoreGive(xSemaphore);
         }
-        if(!animation.equals("none")) {
-        if (animation.equals("cycle"))
-        {
+        if(!animation == -1) {
             xTaskCreate(
-                cycle,
+                animations[a],
                 "Animation Task",
                 2048,
                 strip,
                 1,
                 NULL);
         }
-        if (animation.equals("cylon"))
-        {
-            xTaskCreate(
-                cylon,
-                "Animation Task",
-                2048,
-                strip,
-                1,
-                NULL);
-        }
-        if (animation.equals("halloween"))
-        {
-            xTaskCreate(
-                halloween,
-                "Animation Task",
-                2048,
-                strip,
-                1,
-                NULL);
-        }
-        if (animation.equals("fall"))
-        {
-            xTaskCreate(
-                fall,
-                "Animation Task",
-                2048,
-                strip,
-                1,
-                NULL);
-        }
-    }
     setPower(power);
 }
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
     strip->setBrightness(brightness);
-    if(animation.equals("none") && power) showColor();
+    if(animation == -1 && power) showColor();
 }
 void AnimationHelper::setPower(bool p) {
     power = p;
     if(p) 
     {
-        if(animation.equals("none")) showColor();
+        if(animation == -1) showColor();
         else 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
@@ -102,7 +90,7 @@ void AnimationHelper::setPower(bool p) {
     }
     else 
     {
-        if(!animation.equals("none")) 
+        if(!animation == -1) 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
             if(animTask != NULL) 
@@ -116,6 +104,9 @@ void AnimationHelper::setPower(bool p) {
         strip->show();
     }
 }
+void AnimationHelper::setAnimationSemaphore(semaPtr s) {
+    s(&xSemaphore);
+}
 
 bool AnimationHelper::getPower() {
     return power;
@@ -123,8 +114,14 @@ bool AnimationHelper::getPower() {
 byte AnimationHelper::getBrightness() {
     return brightness;
 }
-String AnimationHelper::getAnimation() {
+int AnimationHelper::getAnimation() {
     return animation;
+}
+String* AnimationHelper::getAnimationNames() {
+    return animNames;
+}
+int AnimationHelper::getNumberAnimations() {
+    return numAnims;
 }
 uint32_t AnimationHelper::getColor() {
     return color;

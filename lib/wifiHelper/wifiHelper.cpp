@@ -128,6 +128,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
   {
     data[len] = 0;
     String msg = String((char *)data);
+    if(msg.equals("getAnimations")) {
+      for(int i = 0; i < strp->getNumberAnimations(); i++) ws.textAll("a:" + strp->getAnimationNames()[i]);
+    }
     if (msg.startsWith("p:"))
     {
       // power = msg.substring(msg.indexOf(":")+1).equals("true");
@@ -146,7 +149,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
     {
       // ledColor(0,0,0);
       // lAnim = animation;
-      strp->setAnimation(msg.substring(msg.indexOf(":") + 1));
+      strp->setAnimation(msg.substring(msg.indexOf(":") + 1).toInt());
     }
     if (msg.startsWith("b:"))
     {

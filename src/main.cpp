@@ -13,6 +13,7 @@
 #include <wifiHelper.h>
 #include <animationHelper.h>
 #include <mpu6500.h>
+#include "animations/animations.h"
 
 // create leds in memory
 //declare mpu objuect
@@ -24,9 +25,11 @@ AnimationHelper strip(NUMLEDS, DATAPIN);
 
 void setup() {
   //Serial.begin(115200);
-  
   // init leds
   strip.begin();
+  for(int i = 0; i < (sizeof(anims)/sizeof(animPtr)); i++)
+  strip.addAnimation(names[i], anims[i]);
+  strip.setAnimationSemaphore(setSemaphore);
   // init mpu6050, if failed stop program
   //if(mpu.begin()) while(1) delay(100);
   //mpu.setupInt();

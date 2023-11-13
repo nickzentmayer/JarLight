@@ -1,3 +1,4 @@
+#define ANIMPTR
 #include "animations.h"
 
 SemaphoreHandle_t* xSemaphore;

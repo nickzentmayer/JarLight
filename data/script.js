@@ -1,6 +1,8 @@
 
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
+var animButtons;
+var animCount = 0;
 function initWebSocket() {
     console.log('Trying to open a WebSocket connection...');
     websocket = new WebSocket(gateway);
@@ -11,6 +13,7 @@ function initWebSocket() {
 function onOpen(event) {
     console.log('Connection opened');
     //sendMsg('upd');
+    sendMsg('anims');
 }
 
 function onClose(event) {
@@ -31,13 +34,35 @@ function onMessage(event) {
         if(value == 'STA') document.getElementById('recon').style.display = "none";
     }
     if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
+    if(topic == 'a') {
+        var b = document.createElement("button");
+        b.value = animCount++;
+        b.className = "animButtons";
+        b.onclick = function() {console.log(this.value)};
+        b.textContent = value;
+        animButtons.appendChild(b);
+    }
+    
 }
 window.addEventListener('load', onLoad);
-function onLoad(event) {
-    initWebSocket();
-    //document.getElementById('animButtons').onpointerover = changeColor();
-}
 
 function sendMsg(msg) {
     websocket.send(msg);
 }
+
+function onLoad(event) {
+    initWebSocket();
+    //document.getElementById('animButtons').onpointerover = changeColor();
+    animButtons = document.getElementById("animations");
+    for(let x = 0; x < 5; x++) {
+        
+    }
+}
+
+
+
+
+/*<input type="button" value="Cylon" class="animButtons" onclick="sendMsg('a:cylon')">
+            <input type="button" value="Cycle" class="animButtons" onclick="sendMsg('a:cycle')">
+            <input type="button" value="Fall" class="animButtons" onclick="sendMsg('a:fall')">
+            <input type="button" value="Halloween" class="animButtons" onclick="sendMsg('a:halloween')">*/
