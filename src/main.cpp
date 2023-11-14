@@ -26,10 +26,13 @@ AnimationHelper strip(NUMLEDS, DATAPIN);
 void setup() {
   //Serial.begin(115200);
   // init leds
+  delay(1000);
   strip.begin();
-  for(int i = 0; i < (sizeof(anims)/sizeof(animPtr)); i++)
-  strip.addAnimation(names[i], anims[i]);
+  Serial.println("begun");
+  
+  for(int i = 0; i < 4; i++) strip.addAnimation(&names[i], anims[i]);
   strip.setAnimationSemaphore(setSemaphore);
+  Serial.println("probably not");
   // init mpu6050, if failed stop program
   //if(mpu.begin()) while(1) delay(100);
   //mpu.setupInt();

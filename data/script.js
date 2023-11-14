@@ -13,7 +13,10 @@ function initWebSocket() {
 function onOpen(event) {
     console.log('Connection opened');
     //sendMsg('upd');
-    sendMsg('anims');
+    let len = animButtons.getElementsByClassName("animButtons").length
+    for(let i = 0; i < len; i++) animButtons.getElementsByClassName("animButtons")[0].remove();
+    
+    sendMsg('getAnimations');
 }
 
 function onClose(event) {
@@ -36,9 +39,9 @@ function onMessage(event) {
     if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
     if(topic == 'a') {
         var b = document.createElement("button");
-        b.value = animCount++;
+        b.value = (animCount++).toString();
         b.className = "animButtons";
-        b.onclick = function() {console.log(this.value)};
+        b.onclick = function() {sendMsg("a:" + this.value)};
         b.textContent = value;
         animButtons.appendChild(b);
     }
@@ -54,9 +57,6 @@ function onLoad(event) {
     initWebSocket();
     //document.getElementById('animButtons').onpointerover = changeColor();
     animButtons = document.getElementById("animations");
-    for(let x = 0; x < 5; x++) {
-        
-    }
 }
 
 

@@ -12,7 +12,7 @@ void handleIndex(AsyncWebServerRequest *req);
 void sendFile(AsyncWebServerRequest *req);
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
              void *arg, uint8_t *data, size_t len);
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id);
 void dataOnConnect();
 void handleWiFi();
 void sendBattery();

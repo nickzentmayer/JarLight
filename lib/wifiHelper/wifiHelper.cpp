@@ -77,7 +77,7 @@ bool wifiSetup(AnimationHelper *s)
   ArduinoOTA.begin();
   String name = DEVICE_NAME;
   name.toLowerCase();
-  while(name.indexOf(' ') > 0) name.remove(name.indexOf(' '));
+  while(name.indexOf(' ') > 0) name.remove(name.indexOf(' '), 1);
   MDNS.begin(name);
   WiFi.setHostname(DEVICE_NAME);
   server.on("/", handleIndex);
@@ -112,7 +112,7 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     Serial.printf("WebSocket client #%u disconnected\n", client->id());
     break;
   case WS_EVT_DATA:
-    handleWebSocketMessage(arg, data, len);
+    handleWebSocketMessage(arg, data, len, client->id());
     break;
   case WS_EVT_PONG:
     break;
@@ -121,7 +121,7 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
 {
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
@@ -129,7 +129,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
     data[len] = 0;
     String msg = String((char *)data);
     if(msg.equals("getAnimations")) {
-      for(int i = 0; i < strp->getNumberAnimations(); i++) ws.textAll("a:" + strp->getAnimationNames()[i]);
+      for(int i = 0; i < strp->getNumberAnimations(); i++) ws.text(id, "a:" + *(strp->getAnimationNames()[i]));
     }
     if (msg.startsWith("p:"))
     {
@@ -150,6 +150,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
       // ledColor(0,0,0);
       // lAnim = animation;
       strp->setAnimation(msg.substring(msg.indexOf(":") + 1).toInt());
+      Serial.println(strp->getAnimation());
     }
     if (msg.startsWith("b:"))
     {

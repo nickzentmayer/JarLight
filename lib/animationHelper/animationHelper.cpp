@@ -25,18 +25,18 @@ void AnimationHelper::setColor(uint32_t c, bool sho) {
 }
 void AnimationHelper::showColor() 
 {
-if(!animation == -1)setAnimation(-1);
+if(animation != -1)setAnimation(-1);
 strip->fill(color);
 if(!power) return;
 strip->show();
 }
-void AnimationHelper::addAnimation(String name, animPtr anim) {
-    
+void AnimationHelper::addAnimation(String* name, animPtr anim) {
+    Serial.println(numAnims);
     if(animations != NULL) {
-        animPtr *oldAnims = animations;
-        String *oldNames = animNames;
+        animPtr* oldAnims = animations;
+        String** oldNames = animNames;
         animations = new animPtr[++numAnims];
-        animNames = new String[numAnims];
+        animNames = new String*[numAnims];
         for(int i = 0; i < numAnims - 1; i++) {
             animations[i] = oldAnims[i];
             animNames[i] = oldNames[i];
@@ -48,8 +48,9 @@ void AnimationHelper::addAnimation(String name, animPtr anim) {
     }
     else {
         animations = new animPtr[++numAnims];
-        animNames = new String[numAnims];
+        animNames = new String*[numAnims];
         animations[0] = anim;
+        animNames[0] = name;
     }
 }
 void AnimationHelper::setAnimation(int a) {
@@ -60,10 +61,11 @@ void AnimationHelper::setAnimation(int a) {
             xSemaphoreTake(xSemaphore, portMAX_DELAY);
             vTaskDelete(animTask);
             xSemaphoreGive(xSemaphore);
+            Serial.println("delete");
         }
-        if(!animation == -1) {
+        if(animation != -1) {
             xTaskCreate(
-                animations[a],
+                animations[animation],
                 "Animation Task",
                 2048,
                 strip,
@@ -90,7 +92,7 @@ void AnimationHelper::setPower(bool p) {
     }
     else 
     {
-        if(!animation == -1) 
+        if(animation != -1) 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
             if(animTask != NULL) 
@@ -117,7 +119,7 @@ byte AnimationHelper::getBrightness() {
 int AnimationHelper::getAnimation() {
     return animation;
 }
-String* AnimationHelper::getAnimationNames() {
+String** AnimationHelper::getAnimationNames() {
     return animNames;
 }
 int AnimationHelper::getNumberAnimations() {

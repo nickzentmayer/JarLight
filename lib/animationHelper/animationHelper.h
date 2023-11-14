@@ -17,7 +17,7 @@ class AnimationHelper {
     void setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho = false);
     void setColor(uint32_t c, bool sho = false);
     void showColor();
-    void addAnimation(String name, void (*anim)(void*));
+    void addAnimation(String* name, void (*anim)(void*));
     void setAnimation(int a);
     void setBrightness(byte b);
     void setPower(bool p);
@@ -26,7 +26,7 @@ class AnimationHelper {
     bool getPower();
     byte getBrightness();
     int getAnimation();
-    String* getAnimationNames();
+    String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();
     Adafruit_NeoPixel* getStrip();
@@ -42,7 +42,7 @@ class AnimationHelper {
     int animation = -1;
     SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
     animPtr *animations = NULL;
-    String *animNames = NULL;
+    String** animNames;
     int numAnims = 0;
 };
 #endif

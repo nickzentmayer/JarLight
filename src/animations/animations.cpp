@@ -5,12 +5,14 @@ SemaphoreHandle_t* xSemaphore;
 
 void setSemaphore(SemaphoreHandle_t* xSem) {
   xSemaphore = xSem;
+  Serial.println("have semaphore");
 }
 
 void cycle(void* s)  {
   Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
     uint16_t fph;
     //strip->setPin(strip->getPin());
+    Serial.println("start cycle");
     for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     uint16_t hue = fph;
