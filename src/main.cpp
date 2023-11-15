@@ -1,26 +1,16 @@
 //libraries
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
-//#include <Adafruit_MPU6050.h>
-//#include <Adafruit_Sensor.h>
-#include <Wire.h>
-#include <WiFi.h>
-#include <ArduinoOTA.h>
-#include <ESPmDNS.h>
-#include <ESPAsyncWebServer.h>
-//custom files
-#include "config.h"
 #include <wifiHelper.h>
 #include <animationHelper.h>
 #include <mpu6500.h>
+//custom files
+#include "config.h"
 #include "animations/animations.h"
 
 // create leds in memory
 //declare mpu objuect
-//Adafruit_MPU6050 mpu;
-MPU mpu(0x68);
+MPU mpu(MPUADDR);
 AnimationHelper strip(NUMLEDS, DATAPIN);
-//Adafruit_NeoPixel st(NUMLEDS, DATAPIN, NEO_GRB + NEO_KHZ800);
 
 
 void setup() {
@@ -32,14 +22,10 @@ void setup() {
   
   for(int i = 0; i < (sizeof(animations)/sizeof(Animation)); i++) strip.addAnimation(&(animations[i].name), animations[i].anim);
   strip.setAnimationSemaphore(setSemaphore);
-  Serial.println("probably not");
-  // init mpu6050, if failed stop program
-  //if(mpu.begin()) while(1) delay(100);
-  //mpu.setupInt();
+  mpu.setupInt();
   pinMode(MPUINT, INPUT);
   pinMode(BATTPIN, INPUT);
-  //mpu.enableSleep(true); //sleep cuz int is wack
-  strip.setColor(0, 0, 100, true);Serial.println("nuh uh");
+  strip.setColor(0, 0, 100, true);
   if(!wifiSetup(&strip)) {
     Serial.println("FAIL");
     strip.setColor(255, 0, 0, true);
@@ -52,11 +38,9 @@ void setup() {
   else strip.setColor(0, 255, 0, true);
   delay(1000);
   strip.setColor(100, 100, 100, true);
+  mpu.clearInt();
 }
 
 void loop() {
-  /*if(digitalRead(MPUINT) == HIGH) {
-    strip.setColor(255, 0, 0, true);
-  }*/
   handleWiFi();
 }

@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Wire.h>
 
 class MPU 
@@ -7,6 +8,7 @@ class MPU
     void writeByte(uint8_t subAddress, uint8_t data);
     uint8_t readByte(uint8_t subAddress);
     void setupInt();
+    void clearInt();
     private:
     uint8_t address;
 };

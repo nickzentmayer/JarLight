@@ -7,9 +7,14 @@
 //#define SOFTAP_SSID "Jar Light" //overwrite SSID, will default to device name if not defined
 #define SOFTAP_PSWD "deeznutz"
 
+//uncomment to use OTA
+#define USEOTA
+
 #define PORT 80
 
 #define NUMLEDS 68
 #define DATAPIN D10
-#define MPUINT (1ULL << 5)
+#define MPUINT D3
 #define BATTPIN D0
+
+#define MPUADDR 0x68

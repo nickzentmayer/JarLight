@@ -2,6 +2,15 @@
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 
+/*GOALS OF THIS LIBARARY
+1. Make me feel good about finally using c++ classes
+2. Clean up the usually stringy and messy code of these projects
+3. *Hopefully* support multiple strands if necessary (Havent tested)
+4. USING FREERTOS TASKS FOR ANIMATIONS(real proud of this one)
+5. Create and handle all task related functions
+This ensures you can make your animations as blocking as u want, using as many delays as you want
+and still have a responsive web interface*/
+
 #ifndef ANIMHELPER
 #define ANIMHELPER
 

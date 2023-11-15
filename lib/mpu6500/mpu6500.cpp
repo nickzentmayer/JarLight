@@ -2,10 +2,10 @@
 
 MPU::MPU(uint8_t ad) {
     address = ad;
+    Wire.begin();
 }
 
 void MPU::writeByte(uint8_t subAddress, uint8_t data) {
-  Wire.begin();
   Wire.beginTransmission(address); // Initialize the Tx buffer
   Wire.write(subAddress); // Put slave register address in Tx buffer
   Wire.write(data); // Put data in Tx buffer
@@ -23,15 +23,26 @@ uint8_t MPU::readByte(uint8_t subAddress) {
 }
 
 void MPU::setupInt() {
-    writeByte(0x6B, readByte(0x6B) & 0x1F);
-    writeByte(0x68, 0x07);
-    writeByte(0x6C, 0x07);
-    writeByte(0x1D, 0x01);
-    writeByte(0x38, 0x40);
-    writeByte(0x69, 0xC0);
-    writeByte(0x1F, 0xAA);
-    writeByte(0x1E, 0x02);
-    writeByte(0x37, 0x90);
-    writeByte(0x6B, readByte(0x6B) | 0x20);
+  //PWR MGMT 1
+    writeByte(0x6B, B10001000);
+    writeByte(0x37, B00010000);
+    //PWRMGMT 2
+    writeByte(0x6C, B00000111);
+    //following datasheet ACCELL CONFIG 2
+    writeByte(0x1D, B00000001);
+    //enable motion int
+    writeByte(0x38, B01000000);
+    //motion control
+    writeByte(0x69, B11000000);
+    //threshold
+    writeByte(0x1F, 70);
+    //wakeup freq
+    writeByte(0x1E, B00001110);
+    //set cycle to 1
+    writeByte(0x6B, B00101000);
+}
+
+void MPU::clearInt() {
+  readByte(0x38);
 }
 

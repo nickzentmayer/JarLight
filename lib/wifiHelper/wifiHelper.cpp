@@ -50,6 +50,7 @@ bool wifiSetup(AnimationHelper *s)
   pinMode(BATTPIN, INPUT);
   SPIFFS.begin(true);
   res = wifiConnect(false);
+  #ifdef USEOTA
   ArduinoOTA
       .onStart([]()
                {
@@ -75,6 +76,7 @@ bool wifiSetup(AnimationHelper *s)
       else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
 
   ArduinoOTA.begin();
+  #endif
   String name = DEVICE_NAME;
   name.toLowerCase();
   while(name.indexOf(' ') > 0) name.remove(name.indexOf(' '), 1);
@@ -165,7 +167,11 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
         recon = true;
       }
     }
-    //dataOnConnect();
+    if (msg.startsWith("s:")) {
+      strp->setColor(0, true);
+      esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      esp_deep_sleep_start();
+    }
   }
 }
 
@@ -214,7 +220,9 @@ void handleWiFi()
     sendBattery();
     t = millis();
   }
+  #ifdef USEOTA
   ArduinoOTA.handle();
+  #endif
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
   {
