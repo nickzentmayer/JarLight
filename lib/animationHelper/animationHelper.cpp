@@ -68,8 +68,8 @@ void AnimationHelper::setAnimation(int a) {
                 animations[animation],
                 "Animation Task",
                 2048,
-                strip,
-                1,
+                this,
+                2,
                 NULL);
         }
     setPower(power);

@@ -30,7 +30,7 @@ void setup() {
   strip.begin();
   Serial.println("begun");
   
-  for(int i = 0; i < 4; i++) strip.addAnimation(&names[i], anims[i]);
+  for(int i = 0; i < (sizeof(animations)/sizeof(Animation)); i++) strip.addAnimation(&(animations[i].name), animations[i].anim);
   strip.setAnimationSemaphore(setSemaphore);
   Serial.println("probably not");
   // init mpu6050, if failed stop program

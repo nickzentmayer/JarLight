@@ -15,7 +15,7 @@ function onOpen(event) {
     //sendMsg('upd');
     let len = animButtons.getElementsByClassName("animButtons").length
     for(let i = 0; i < len; i++) animButtons.getElementsByClassName("animButtons")[0].remove();
-    
+    animCount = 0;
     sendMsg('getAnimations');
 }
 

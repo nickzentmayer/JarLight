@@ -1,4 +1,4 @@
-#define ANIMPTR
+#define ANIM
 #include "animations.h"
 
 SemaphoreHandle_t* xSemaphore;
@@ -9,7 +9,8 @@ void setSemaphore(SemaphoreHandle_t* xSem) {
 }
 
 void cycle(void* s)  {
-  Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
     uint16_t fph;
     //strip->setPin(strip->getPin());
     Serial.println("start cycle");
@@ -47,7 +48,8 @@ void fadeall(Adafruit_NeoPixel* strip, byte dec) {
 }
 
 void cylon(void* s) {
-  Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
   bool dir;
   int pos;
   uint16_t hue;
@@ -72,7 +74,8 @@ void cylon(void* s) {
 }
 
 void halloween(void* s) {
-  Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
   //strip->setPin(strip->getPin());
   for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
@@ -88,7 +91,8 @@ void halloween(void* s) {
 }
 
 void fall(void* s) {
-  Adafruit_NeoPixel* strip = static_cast<Adafruit_NeoPixel *>(s);
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
   for(;;) {
     xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 1; i++) {
@@ -106,13 +110,62 @@ void fall(void* s) {
       default:
         break;
       }
-    
-    
-    
   }
-    fadeall(strip, 15);
+    fadeall(strip, 7);
     strip->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(50);
+    vTaskDelay(25);
+  }
+}
+
+void christmas(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    for(int i = 0; i < 3; i++) {
+      switch (random(5))
+      {
+        case 0:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(255, 0, 0));
+          break;
+        case 1:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(0, 255, 0));
+          break;
+        case 2:
+          strip->setPixelColor(random(strip->numPixels()-1), strip->Color(100, 100, 100));
+        break;
+      default:
+        break;
+      }
+  }
+    fadeall(strip, 5);
+    strip->show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(25);
+  }
+}
+
+void twinkle(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  Adafruit_NeoPixel* strip = helper->getStrip();
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    for(int i = 0; i < 3; i++) {
+      switch (random(3))
+      {
+        case 0:
+          strip->setPixelColor(random(strip->numPixels()-1), helper->getColor());
+          break;
+        break;
+      default:
+        break;
+      }
+  }
+    fadeall(strip, 5);
+    strip->show();
+    strip->show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(25);
   }
 }
