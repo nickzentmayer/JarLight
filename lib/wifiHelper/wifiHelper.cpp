@@ -5,18 +5,21 @@ AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
 
-bool wifiConnect(bool showLeds) {
+bool wifiConnect(bool showLeds)
+{
   Serial.println("wifi connect");
   uint32_t c = strp->getColor();
   bool res = true;
-  if(showLeds) {
+  if (showLeds)
+  {
     strp->setColor(0x000055, true);
   }
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PSWD);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
-    if(showLeds) strp->setColor(0xFF0000, true);
+    if (showLeds)
+      strp->setColor(0xFF0000, true);
     if (USE_SOFT_AP)
     {
       WiFi.mode(WIFI_AP);
@@ -24,7 +27,7 @@ bool wifiConnect(bool showLeds) {
 #ifdef SOFTAP_SSID
       WiFi.softAP(SOFTAP_SSID, SOFTAP_PSWD);
 #else
-    WiFi.softAP(DEVICE_NAME, SOFTAP_PSWD);
+      WiFi.softAP(DEVICE_NAME, SOFTAP_PSWD);
 #endif
 
 #else
@@ -33,8 +36,10 @@ bool wifiConnect(bool showLeds) {
     }
     res = false;
   }
-  if(showLeds) {
-    if(res) strp->setColor(0x00FF00, true);
+  if (showLeds)
+  {
+    if (res)
+      strp->setColor(0x00FF00, true);
     delay(2000);
     strp->setColor(c, true);
   }
@@ -43,14 +48,16 @@ bool wifiConnect(bool showLeds) {
 
 bool wifiSetup(AnimationHelper *s)
 {
-  //start wifi setup
+  // start wifi setup
   strp = s;
   Serial.println("wifi setup");
   bool res = true;
+  #ifdef BATTPIN
   pinMode(BATTPIN, INPUT);
+  #endif
   SPIFFS.begin(true);
   res = wifiConnect(false);
-  #ifdef USEOTA
+#ifdef USEOTA
   ArduinoOTA
       .onStart([]()
                {
@@ -76,10 +83,11 @@ bool wifiSetup(AnimationHelper *s)
       else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
 
   ArduinoOTA.begin();
-  #endif
+#endif
   String name = DEVICE_NAME;
   name.toLowerCase();
-  while(name.indexOf(' ') > 0) name.remove(name.indexOf(' '), 1);
+  while (name.indexOf(' ') > 0)
+    name.remove(name.indexOf(' '), 1);
   MDNS.begin(name);
   WiFi.setHostname(DEVICE_NAME);
   server.on("/", handleIndex);
@@ -130,8 +138,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
   {
     data[len] = 0;
     String msg = String((char *)data);
-    if(msg.equals("getAnimations")) {
-      for(int i = 0; i < strp->getNumberAnimations(); i++) ws.text(id, "a:" + *(strp->getAnimationNames()[i]));
+    if (msg.equals("getAnimations"))
+    {
+      for (int i = 0; i < strp->getNumberAnimations(); i++)
+        ws.text(id, "a:" + *(strp->getAnimationNames()[i]));
     }
     if (msg.startsWith("p:"))
     {
@@ -163,11 +173,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
     }
     if (msg.startsWith("w:"))
     {
-      if (msg.substring(msg.indexOf(":") + 1).equals("recon")) {
+      if (msg.substring(msg.indexOf(":") + 1).equals("recon"))
+      {
         recon = true;
       }
     }
-    if (msg.startsWith("s:")) {
+    if (msg.startsWith("s:"))
+    {
       strp->setColor(0, true);
       esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
       esp_deep_sleep_start();
@@ -193,12 +205,19 @@ void dataOnConnect()
   index += String(b, HEX);
   ws.textAll("c:#" + index);
   ws.textAll("b:" + String(strp->getBrightness()));
-  if(WiFi.getMode() == WIFI_AP)ws.textAll("w:AP");
-  else ws.textAll("w:STA");
+  if (WiFi.getMode() == WIFI_AP)
+    ws.textAll("w:AP");
+  else
+    ws.textAll("w:STA");
+  #ifdef BATTPIN
+  ws.textAll("type:battery");
   sendBattery();
+  #else
+  ws.textAll("type:wall");
+  #endif
   ws.textAll("n:" + String(DEVICE_NAME));
 }
-
+#ifdef BATTPIN
 void sendBattery()
 {
   int battVolt = analogReadMilliVolts(BATTPIN) * 2;
@@ -206,33 +225,38 @@ void sendBattery()
   {
     battVolt += map(strp->getBrightness(), 5, 255, 1, 100);
   }
-  if (battVolt > 4100)
-    battVolt = 4100;
-  int percent = map(battVolt, 3200, 4100, 0, 20) * 5;
+  if (battVolt > 4200)
+    battVolt = 4200;
+  int percent = map(battVolt, 3100, 4200, 0, 20) * 5;
   ws.textAll("batt:" + String(percent));
 }
-
+#endif
 void handleWiFi()
 {
+#ifdef BATTPIN
   static unsigned long t = millis();
   if (millis() - t > 10000)
   {
     sendBattery();
     t = millis();
   }
-  #ifdef USEOTA
+#endif
+#ifdef USEOTA
   ArduinoOTA.handle();
-  #endif
+#endif
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
   {
     if (!USE_SOFT_AP)
-      {
-        if(!wifiConnect(true)) delay(5000);
-      }
-      else wifiConnect(true);
+    {
+      if (!wifiConnect(true))
+        delay(5000);
+    }
+    else
+      wifiConnect(true);
   }
-  if(recon) {
+  if (recon)
+  {
     wifiConnect(true);
     recon = false;
   }

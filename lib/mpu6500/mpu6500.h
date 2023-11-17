@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <AnimationHelper.h>
+#include "config.h"
 
 class MPU 
 {

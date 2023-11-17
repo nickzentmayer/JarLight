@@ -190,3 +190,9 @@ html {
                 cursor: pointer;
                 /* Cursor on hover */
             }
+            #battery {
+                display: none;
+            }
+            #sleep{
+                display: none;
+            }

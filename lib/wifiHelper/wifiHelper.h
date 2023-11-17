@@ -15,4 +15,6 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id);
 void dataOnConnect();
 void handleWiFi();
+#ifdef BATTPIN
 void sendBattery();
+#endif

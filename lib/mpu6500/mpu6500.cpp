@@ -25,6 +25,7 @@ uint8_t MPU::readByte(uint8_t subAddress) {
 void MPU::setupInt() {
   //PWR MGMT 1
     writeByte(0x6B, B10001000);
+    //configure INT pin
     writeByte(0x37, B00010000);
     //PWRMGMT 2
     writeByte(0x6C, B00000111);

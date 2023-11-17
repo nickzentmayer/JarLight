@@ -45,7 +45,16 @@ function onMessage(event) {
         b.textContent = value;
         animButtons.appendChild(b);
     }
-    
+    if(topic == 'type') {
+        if(value == 'battery') {
+            document.getElementById('battery').style.display = "inline";
+            document.getElementById('sleep').style.display = "inline";
+        }
+        if(value == 'wall') {
+            document.getElementById('battery').style.display = "none"; 
+            document.getElementById('sleep').style.display = "none";
+        }
+    }
 }
 window.addEventListener('load', onLoad);
 

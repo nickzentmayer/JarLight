@@ -157,7 +157,6 @@ void twinkle(void* s) {
         case 0:
           strip->setPixelColor(random(strip->numPixels()-1), helper->getColor());
           break;
-        break;
       default:
         break;
       }

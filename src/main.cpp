@@ -1,7 +1,7 @@
 //libraries
 #include <Arduino.h>
 #include <wifiHelper.h>
-#include <animationHelper.h>
+#include <AnimationHelper.h>
 #include <mpu6500.h>
 //custom files
 #include "config.h"
@@ -24,7 +24,6 @@ void setup() {
   strip.setAnimationSemaphore(setSemaphore);
   mpu.setupInt();
   pinMode(MPUINT, INPUT);
-  pinMode(BATTPIN, INPUT);
   strip.setColor(0, 0, 100, true);
   if(!wifiSetup(&strip)) {
     Serial.println("FAIL");

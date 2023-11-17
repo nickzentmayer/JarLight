@@ -9,12 +9,13 @@
 
 //uncomment to use OTA
 #define USEOTA
-
+//webserver port
 #define PORT 80
-
+//led config
 #define NUMLEDS 68
 #define DATAPIN D10
+//mpu config
 #define MPUINT D3
-#define BATTPIN D0
-
 #define MPUADDR 0x68
+//battery config, comment out to not use battery
+#define BATTPIN D0
