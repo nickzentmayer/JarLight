@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
-#include <animationHelper.h>
+#include <NeoPixelBusLg.h>
+#include <AnimationHelper.h>
 #ifndef ANIM
 #define ANIM
     struct Animation {
@@ -11,7 +11,7 @@
     void cylon(void* s);
     void cycle(void* s);
     //void fireworks();
-    void fadeall(Adafruit_NeoPixel* strip, uint8_t dec);
+    void fadeall(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip, uint8_t dec);
     void halloween(void* s);
     void fall(void* s);
     void setSemaphore(SemaphoreHandle_t* xSem);

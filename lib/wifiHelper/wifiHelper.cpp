@@ -8,7 +8,7 @@ bool recon = false;
 bool wifiConnect(bool showLeds)
 {
   Serial.println("wifi connect");
-  uint32_t c = strp->getColor();
+  RgbColor c = strp->getColor();
   bool res = true;
   if (showLeds)
   {
@@ -19,7 +19,7 @@ bool wifiConnect(bool showLeds)
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     if (showLeds)
-      strp->setColor(0xFF0000, true);
+      strp->setColor(RgbColor(255, 0, 0), true);
     if (USE_SOFT_AP)
     {
       WiFi.mode(WIFI_AP);
@@ -39,7 +39,7 @@ bool wifiConnect(bool showLeds)
   if (showLeds)
   {
     if (res)
-      strp->setColor(0x00FF00, true);
+      strp->setColor(RgbColor(0, 255, 0), true);
     delay(2000);
     strp->setColor(c, true);
   }
@@ -189,9 +189,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
 
 void dataOnConnect()
 {
-  byte r = strp->getColor() >> 16;
-  byte g = strp->getColor() >> 8;
-  byte b = strp->getColor();
+  byte r = strp->getColor().R;
+  byte g = strp->getColor().G;
+  byte b = strp->getColor().B;
   ws.textAll("p:" + String(strp->getPower()));
   String index;
   if (r < 10)

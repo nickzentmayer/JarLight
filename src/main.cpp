@@ -21,7 +21,6 @@ void setup() {
   Serial.println("begun");
   
   for(int i = 0; i < (sizeof(animations)/sizeof(Animation)); i++) strip.addAnimation(&(animations[i].name), animations[i].anim);
-  strip.setAnimationSemaphore(setSemaphore);
   mpu.setupInt();
   pinMode(MPUINT, INPUT);
   strip.setColor(0, 0, 100, true);

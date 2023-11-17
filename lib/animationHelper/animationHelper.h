@@ -1,6 +1,8 @@
 #pragma once
-#include <Adafruit_NeoPixel.h>
+#include <NeoPixelBus.h>
+#include <NeoPixelBusLg.h>
 #include <Arduino.h>
+#include "config.h"
 
 /*GOALS OF THIS LIBARARY
 1. Make me feel good about finally using c++ classes
@@ -15,7 +17,6 @@ and still have a responsive web interface*/
 #define ANIMHELPER
 
 typedef void (*animPtr) (void*);
-typedef void (*semaPtr) (SemaphoreHandle_t*);
 
 class AnimationHelper {
     public:
@@ -23,34 +24,35 @@ class AnimationHelper {
 
     void begin();
     void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
-    void setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho = false);
-    void setColor(uint32_t c, bool sho = false);
+    void setColorHsv(float h, float s, float v, bool sho = false);
+    void setColor(RgbColor c, bool sho = false);
     void showColor();
     void addAnimation(String* name, void (*anim)(void*));
     void setAnimation(int a);
     void setBrightness(byte b);
     void setPower(bool p);
-    void setAnimationSemaphore(semaPtr);
+    void setAnimationSemaphore(SemaphoreHandle_t* s);
 
     bool getPower();
     byte getBrightness();
     int getAnimation();
     String** getAnimationNames();
     int getNumberAnimations();
-    uint32_t getColor();
-    Adafruit_NeoPixel* getStrip();
-    void setStrip(Adafruit_NeoPixel* s);
+    RgbColor getColor();
+    NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* getStrip();
+    void setStrip(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* s);
 
     private:
+    void fill(RgbColor c);
     uint8_t pin;
-    Adafruit_NeoPixel* strip; 
-    uint32_t color;
+    NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip;
+    RgbColor color;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;
     int animation = -1;
-    SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
-    animPtr *animations = NULL;
+    SemaphoreHandle_t* xSemaphore;
+    animPtr* animations = NULL;
     String** animNames;
     int numAnims = 0;
 };

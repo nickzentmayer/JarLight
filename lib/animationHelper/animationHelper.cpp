@@ -1,34 +1,34 @@
-#include "animationHelper.h"
+#include "AnimationHelper.h"
 
 AnimationHelper::AnimationHelper(int n, uint8_t p) {
     NLEDS = n;
     pin = p;
 }
 void AnimationHelper::begin() {
-    strip = new Adafruit_NeoPixel(NLEDS, pin, NEO_GRB + NEO_KHZ800);
-    strip->begin();
-    strip->setBrightness(brightness);
-    strip->show();
+    strip = new NeoPixelBusLg<PIXELTYPE, PIXELSPEED>(NLEDS, pin);
+    strip->Begin();
+    strip->SetLuminance(brightness);
+    strip->Show();
     setColor(100, 100, 100);
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
-    color = strip->Color(r, g, b);
+    color = RgbColor(r, g, b);
     if(sho) showColor();
 }
-void AnimationHelper::setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho) {
-    color = strip->ColorHSV(h, s, v);
+void AnimationHelper::setColorHsv(float h, float s, float v, bool sho) {
+    color = (RgbColor)HsbColor(h, s, v);
     if(sho) showColor();
 }
-void AnimationHelper::setColor(uint32_t c, bool sho) {
+void AnimationHelper::setColor(RgbColor c, bool sho) {
     color = c;
     if(sho) showColor();
 }
 void AnimationHelper::showColor() 
 {
 if(animation != -1)setAnimation(-1);
-strip->fill(color);
+fill(color);
 if(!power) return;
-strip->show();
+strip->Show();
 }
 void AnimationHelper::addAnimation(String* name, animPtr anim) {
     Serial.println(numAnims);
@@ -58,9 +58,9 @@ void AnimationHelper::setAnimation(int a) {
         xTaskHandle animTask = xTaskGetHandle("Animation Task");
         if(animTask != NULL) 
         {
-            xSemaphoreTake(xSemaphore, portMAX_DELAY);
+            xSemaphoreTake(*xSemaphore, portMAX_DELAY);
             vTaskDelete(animTask);
-            xSemaphoreGive(xSemaphore);
+            xSemaphoreGive(*xSemaphore);
             Serial.println("delete");
         }
         if(animation != -1) {
@@ -76,7 +76,7 @@ void AnimationHelper::setAnimation(int a) {
 }
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
-    strip->setBrightness(brightness);
+    strip->SetLuminance(brightness);
     if(animation == -1 && power) showColor();
 }
 void AnimationHelper::setPower(bool p) {
@@ -97,17 +97,22 @@ void AnimationHelper::setPower(bool p) {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
             if(animTask != NULL) 
             {
-                xSemaphoreTake(xSemaphore, portMAX_DELAY);
+                xSemaphoreTake(*xSemaphore, portMAX_DELAY);
                 vTaskSuspend(animTask);
-                xSemaphoreGive(xSemaphore);
+                xSemaphoreGive(*xSemaphore);
             }
         }
-        strip->fill(0);
-        strip->show();
+        fill(RgbColor(0, 0, 0));
+        strip->Show();
     }
 }
-void AnimationHelper::setAnimationSemaphore(semaPtr s) {
-    s(&xSemaphore);
+void AnimationHelper::setAnimationSemaphore(SemaphoreHandle_t* s) {
+    xSemaphore = s;
+}
+
+void AnimationHelper::fill(RgbColor c) {
+    for(int i=0; i<NUMLEDS; i++) 
+        strip->SetPixelColor(i, color);
 }
 
 bool AnimationHelper::getPower() {
@@ -125,12 +130,12 @@ String** AnimationHelper::getAnimationNames() {
 int AnimationHelper::getNumberAnimations() {
     return numAnims;
 }
-uint32_t AnimationHelper::getColor() {
+RgbColor AnimationHelper::getColor() {
     return color;
 }
-Adafruit_NeoPixel* AnimationHelper::getStrip() {
+NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
     return strip;
 }
-void AnimationHelper::setStrip(Adafruit_NeoPixel* s) {
+void AnimationHelper::setStrip(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* s) {
     strip = s;
 }
