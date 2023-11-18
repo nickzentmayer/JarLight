@@ -1,4 +1,4 @@
-#include "animationHelper.h"
+#include "AnimationHelper.h"
 
 AnimationHelper::AnimationHelper(int n, uint8_t p) {
     NLEDS = n;

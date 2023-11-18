@@ -4,7 +4,7 @@
 #include <ESPmDNS.h>
 #include "config.h"
 #include "SPIFFS.h"
-#include "animationHelper.h"
+#include "AnimationHelper.h"
 
 bool wifiSetup(AnimationHelper* s);
 
