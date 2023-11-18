@@ -1,8 +1,8 @@
 //config file, using seeed studio xiao esp32c3 
 #define DEVICE_NAME "Jar Light" //Caps and spaces allowed, dont uses symbols
 
-#define SSID "Verizon_6NSP4Q"
-#define PSWD "splash9-fax-con"
+#define SSID "Barnegat"
+#define PSWD "Mustang1967"
 #define USE_SOFT_AP true //use soft AP in case of no WiFi
 //#define SOFTAP_SSID "Jar Light" //overwrite SSID, will default to device name if not defined
 #define SOFTAP_PSWD "deeznutz"
