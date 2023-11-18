@@ -6,7 +6,7 @@ SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
 void cycle(void* s)  {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
     float fph;
     //strip->setPin(strip->getPin());
     Serial.println("start cycle");
@@ -18,20 +18,21 @@ void cycle(void* s)  {
       strip->SetPixelColor(i, HsbColor(hue, 1, 1));
       hue += (float)1/strip->PixelCount();
     }
-    fph += UINT16_MAX/(strip->PixelCount()*10);
+    fph += 1.0/(strip->PixelCount()*5);
+    if(fph >= 1.0) fph = 0;
     strip->Show();
     xSemaphoreGive(xSemaphore);
     vTaskDelay(1);
     }
 }
 
-void fadeall(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip, byte dec) {
+void fadeall(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip, byte dec) {
+  RgbColor color;
   for(int i = 0; i < strip->PixelCount(); i++) {
-    strip->SetPixelColor(i, strip->GetPixelColor(i).Dim(dec));
-    /*
-    byte r = color >> 16;
-    byte g = color >> 8;
-    byte b = color;
+    color = strip->GetPixelColor(i);  
+    byte r = color.R;
+    byte g = color.G;
+    byte b = color.B;
     byte m = max(r, g);
     m = max(m, b);
     if(r < dec) r = 0;
@@ -41,14 +42,13 @@ void fadeall(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip, byte dec) {
     if(b < dec) b = 0;
     else b -= map(dec, 0, m, 0, b);
     strip->SetPixelColor(i, RgbColor(r, g, b));
-    */
   }
 }
 
 void cylon(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   bool dir;
   int pos;
   float hue;
@@ -56,8 +56,8 @@ void cylon(void* s) {
   for(;;) {
     xSemaphoreTake( xSemaphore, portMAX_DELAY);
     // Set the i'th led to red 
-    if(dir) strip->SetPixelColor(pos--/2, HsbColor(hue++, 255, 255));
-    else strip->SetPixelColor(pos++/2, HsbColor(hue++, 255, 255));
+    if(dir) strip->SetPixelColor(pos--/2, HsbColor(hue++, 1, 1));
+    else strip->SetPixelColor(pos++/2, HsbColor(hue++, 1, 1));
     // Show the leds
     hue += 1/strip->PixelCount();
     strip->Show(); 
@@ -75,7 +75,7 @@ void cylon(void* s) {
 void halloween(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   //strip->setPin(strip->getPin());
   for(;;) {
     xSemaphoreTake( xSemaphore, portMAX_DELAY);
@@ -93,7 +93,7 @@ void halloween(void* s) {
 void fall(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
     xSemaphoreTake(xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 1; i++) {
@@ -122,7 +122,7 @@ void fall(void* s) {
 void christmas(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
     xSemaphoreTake(xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
@@ -151,7 +151,7 @@ void christmas(void* s) {
 void twinkle(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
   helper->setAnimationSemaphore(&xSemaphore);
-  NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
     xSemaphoreTake(xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
@@ -165,7 +165,6 @@ void twinkle(void* s) {
       }
   }
     fadeall(strip, 5);
-    strip->Show();
     strip->Show();
     xSemaphoreGive(xSemaphore);
     vTaskDelay(25);

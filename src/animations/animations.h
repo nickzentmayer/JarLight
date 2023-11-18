@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <NeoPixelBusLg.h>
+#include <NeoPixelBrightnessBus.h>
 #include <AnimationHelper.h>
 #ifndef ANIM
 #define ANIM
@@ -11,7 +11,7 @@
     void cylon(void* s);
     void cycle(void* s);
     //void fireworks();
-    void fadeall(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip, uint8_t dec);
+    void fadeall(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip, uint8_t dec);
     void halloween(void* s);
     void fall(void* s);
     void setSemaphore(SemaphoreHandle_t* xSem);

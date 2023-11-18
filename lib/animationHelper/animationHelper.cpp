@@ -5,9 +5,9 @@ AnimationHelper::AnimationHelper(int n, uint8_t p) {
     pin = p;
 }
 void AnimationHelper::begin() {
-    strip = new NeoPixelBusLg<PIXELTYPE, PIXELSPEED>(NLEDS, pin);
+    strip = new NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>(NLEDS, pin);
     strip->Begin();
-    strip->SetLuminance(brightness);
+    strip->SetBrightness(brightness);
     strip->Show();
     setColor(100, 100, 100);
 }
@@ -76,7 +76,7 @@ void AnimationHelper::setAnimation(int a) {
 }
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
-    strip->SetLuminance(brightness);
+    strip->SetBrightness(brightness);
     if(animation == -1 && power) showColor();
 }
 void AnimationHelper::setPower(bool p) {
@@ -112,7 +112,7 @@ void AnimationHelper::setAnimationSemaphore(SemaphoreHandle_t* s) {
 
 void AnimationHelper::fill(RgbColor c) {
     for(int i=0; i<NUMLEDS; i++) 
-        strip->SetPixelColor(i, color);
+        strip->SetPixelColor(i, c);
 }
 
 bool AnimationHelper::getPower() {
@@ -133,9 +133,9 @@ int AnimationHelper::getNumberAnimations() {
 RgbColor AnimationHelper::getColor() {
     return color;
 }
-NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
+NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
     return strip;
 }
-void AnimationHelper::setStrip(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* s) {
+void AnimationHelper::setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s) {
     strip = s;
 }

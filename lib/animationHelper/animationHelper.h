@@ -1,6 +1,6 @@
 #pragma once
 #include <NeoPixelBus.h>
-#include <NeoPixelBusLg.h>
+#include <NeoPixelBrightnessBus.h>
 #include <Arduino.h>
 #include "config.h"
 
@@ -39,13 +39,13 @@ class AnimationHelper {
     String** getAnimationNames();
     int getNumberAnimations();
     RgbColor getColor();
-    NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* getStrip();
-    void setStrip(NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* s);
+    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
+    void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
 
     private:
     void fill(RgbColor c);
     uint8_t pin;
-    NeoPixelBusLg<PIXELTYPE, PIXELSPEED>* strip;
+    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip;
     RgbColor color;
     int NLEDS = 0;
     bool power = true;

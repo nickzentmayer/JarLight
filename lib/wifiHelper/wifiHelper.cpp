@@ -180,7 +180,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
     }
     if (msg.startsWith("s:"))
     {
-      strp->setColor(0, true);
+      strp->setColor(RgbColor(0, 0, 0), true);
+      delay(50);
       esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
       esp_deep_sleep_start();
     }
