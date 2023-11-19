@@ -17,5 +17,6 @@
 //mpu config
 #define MPUINT D3
 #define MPUADDR 0x68
+#define MPUTHRESHOLD 125
 //battery config, comment out to not use battery
 #define BATTPIN D0

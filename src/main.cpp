@@ -42,4 +42,10 @@ void setup() {
 
 void loop() {
   handleWiFi();
+  if(digitalRead(MPUINT)) {
+    strip.setPower(!strip.getPower());
+    mpu.clearInt();
+    updateClients();
+    delay(50); //"debounce"
+  }
 }

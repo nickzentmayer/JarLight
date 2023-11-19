@@ -28,7 +28,7 @@ function onMessage(event) {
     var topic = event.data.toString().substring(0, event.data.toString().indexOf(':'));
     var value = event.data.toString().substring(event.data.toString().indexOf(':') + 1);
     console.log(topic + value)
-    if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
+    if (topic == 'p') document.getElementById('powerSwitch').checked = (value == "1");
     if (topic == 'c') document.getElementById('colorpicker').value = value;
     if (topic == 'b') document.getElementById('bright').value = value;
     if (topic == 'batt') document.getElementById('batP').innerHTML = value + "%";

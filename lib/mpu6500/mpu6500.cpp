@@ -36,7 +36,7 @@ void MPU::setupInt() {
     //motion control
     writeByte(0x69, B11000000);
     //threshold
-    writeByte(0x1F, 70);
+    writeByte(0x1F, MPUTHRESHOLD);
     //wakeup freq
     writeByte(0x1E, B00001110);
     //set cycle to 1

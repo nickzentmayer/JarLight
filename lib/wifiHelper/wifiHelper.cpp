@@ -231,6 +231,24 @@ void sendBattery()
   ws.textAll("batt:" + String(percent));
 }
 #endif
+void updateClients() {
+  byte r = strp->getColor() >> 16;
+  byte g = strp->getColor() >> 8;
+  byte b = strp->getColor();
+  ws.textAll("p:" + String(strp->getPower()));
+  String index;
+  if (r < 10)
+    index += "0";
+  index += String(r, HEX);
+  if (g < 10)
+    index += "0";
+  index += String(g, HEX);
+  if (b < 10)
+    index += "0";
+  index += String(b, HEX);
+  ws.textAll("c:#" + index);
+  ws.textAll("b:" + String(strp->getBrightness()));
+}
 void handleWiFi()
 {
 #ifdef BATTPIN
