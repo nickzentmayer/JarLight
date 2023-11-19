@@ -13,7 +13,6 @@ void cycle(void* s)  {
   Adafruit_NeoPixel* strip = helper->getStrip();
     uint16_t fph;
     //strip->setPin(strip->getPin());
-    Serial.println("start cycle");
     for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     uint16_t hue = fph;
@@ -152,7 +151,7 @@ void twinkle(void* s) {
   for(;;) {
     xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
-      switch (random(3))
+      switch (random(15))
       {
         case 0:
           strip->setPixelColor(random(strip->numPixels()-1), helper->getColor());
@@ -161,8 +160,7 @@ void twinkle(void* s) {
         break;
       }
   }
-    fadeall(strip, 5);
-    strip->show();
+    fadeall(strip, 1);
     strip->show();
     xSemaphoreGive(*xSemaphore);
     vTaskDelay(25);
