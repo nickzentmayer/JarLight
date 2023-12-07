@@ -42,13 +42,30 @@ bool wifiConnect(bool showLeds)
     }
     res = false;
   }
+  else {
+    #ifdef USEUPNP
+      tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
+      tinyUPnP->commitPortMappings();
+      #endif
+      #ifdef USE_DDNS
+        String name = DEVICE_NAME;
+        name.toLowerCase();
+        while (name.indexOf(' ') > 0)
+        name.remove(name.indexOf(' '), 1);
+        EasyDDNS.service(DDNS_SERVICE);
+        EasyDDNS.client(name, DDNS_TOKEN);
+        EasyDDNS.onUpdate([&](const char* oldIP, const char* newIP){
+          Serial.print("EasyDDNS - IP Change Detected: ");
+          Serial.println(newIP);
+      });
+        #endif
+  }
   if (showLeds)
   {
     if (res)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
-      tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
-      tinyUPnP->commitPortMappings();
+      
     delay(2000);
     strp->setColor(c, true);
   }
@@ -293,6 +310,9 @@ void handleWiFi()
 #endif
 #ifdef USEUPNP
 tinyUPnP->updatePortMappings(600000);
+#endif
+#ifdef USE_DDNS
+EasyDDNS.update(10000);
 #endif
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)

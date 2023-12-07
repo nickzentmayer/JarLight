@@ -5,7 +5,12 @@
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
+#ifdef USEUPNP
 #include <TinyUPnP.h>
+#endif
+#ifdef USE_DDNS
+#include <EasyDDNS.h>
+#endif
 
 bool wifiSetup(AnimationHelper* s);
 

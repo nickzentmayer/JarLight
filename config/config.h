@@ -15,6 +15,12 @@
 #define USEUPNP
 #define UPNP_PORT 6996 //port for upnp to forward and websever to be on, will NOT overwrite local port
 #define LEASE_DURATION 604800
+//setting for dynamic dns (for use with upnp)
+#ifdef USEUPNP
+#define USE_DDNS
+#define DDNS_TOKEN "c2bd249d-7ca4-4107-a4b3-925f705c12ac"
+#define DDNS_SERVICE "duckdns"
+#endif
 //led config
 #define NUMLEDS 68
 #define DATAPIN D10
