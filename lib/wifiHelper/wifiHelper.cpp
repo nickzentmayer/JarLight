@@ -1,6 +1,11 @@
 #include "wifiHelper.h"
 
 AsyncWebServer server(PORT);
+#ifdef USEUPNP
+AsyncWebServer wanServer(UPNP_PORT);
+TinyUPnP *tinyUPnP = new TinyUPnP(20000);
+AsyncWebSocket wws("/ws");
+#endif
 AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
@@ -15,6 +20,7 @@ bool wifiConnect(bool showLeds)
     strp->setColor(0x000055, true);
   }
   WiFi.mode(WIFI_STA);
+  WiFi.setHostname(DEVICE_NAME);
   WiFi.begin(SSID, PSWD);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
@@ -40,6 +46,7 @@ bool wifiConnect(bool showLeds)
   {
     if (res)
       strp->setColor(0x00FF00, true);
+      WiFi.setHostname(DEVICE_NAME);
     delay(2000);
     strp->setColor(c, true);
   }
@@ -93,6 +100,15 @@ bool wifiSetup(AnimationHelper *s)
   server.on("/", handleIndex);
   server.onNotFound(sendFile);
   server.begin();
+  #ifdef USEUPNP
+  wanServer.on("/", handleIndex);
+  wanServer.onNotFound(sendFile);
+  wanServer.begin();
+  wws.onEvent(wsOnEvent);
+  wanServer.addHandler(&wws);
+  tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
+  tinyUPnP->commitPortMappings();
+  #endif
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
@@ -106,7 +122,11 @@ void handleIndex(AsyncWebServerRequest *req)
 }
 void sendFile(AsyncWebServerRequest *req)
 {
-  req->send(SPIFFS, req->url(), "file");
+  String url = req->url();
+  String type = "text/";
+  if(url.indexOf('.') >= 0) type.concat(url.substring(url.indexOf('.')+1));
+  else type.concat("html");
+  req->send(SPIFFS, url, type);
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -116,13 +136,13 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   {
   case WS_EVT_CONNECT:
     Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-    dataOnConnect();
+    dataOnConnect(server);
     break;
   case WS_EVT_DISCONNECT:
     Serial.printf("WebSocket client #%u disconnected\n", client->id());
     break;
   case WS_EVT_DATA:
-    handleWebSocketMessage(arg, data, len, client->id());
+    handleWebSocketMessage(arg, data, len, client->id(), server);
     break;
   case WS_EVT_PONG:
     break;
@@ -131,7 +151,7 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, AsyncWebSocket* server)
 {
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
@@ -141,7 +161,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
     if (msg.equals("getAnimations"))
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
-        ws.text(id, "a:" + *(strp->getAnimationNames()[i]));
+        server->text(id, "a:" + *(strp->getAnimationNames()[i]));
     }
     if (msg.startsWith("p:"))
     {
@@ -181,18 +201,19 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
     if (msg.startsWith("s:"))
     {
       strp->setColor(0, true);
+      WiFi.mode(WIFI_OFF); //idk if this will make esp draw less current in sleep but cant hurt
       esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
       esp_deep_sleep_start();
     }
   }
 }
 
-void dataOnConnect()
+void dataOnConnect(AsyncWebSocket* server)
 {
   byte r = strp->getColor() >> 16;
   byte g = strp->getColor() >> 8;
   byte b = strp->getColor();
-  ws.textAll("p:" + String(strp->getPower()));
+  server->textAll("p:" + String(strp->getPower()));
   String index;
   if (r < 10)
     index += "0";
@@ -203,19 +224,19 @@ void dataOnConnect()
   if (b < 10)
     index += "0";
   index += String(b, HEX);
-  ws.textAll("c:#" + index);
-  ws.textAll("b:" + String(strp->getBrightness()));
+  server->textAll("c:#" + index);
+  server->textAll("b:" + String(strp->getBrightness()));
   if (WiFi.getMode() == WIFI_AP)
-    ws.textAll("w:AP");
+    server->textAll("w:AP");
   else
-    ws.textAll("w:STA");
+    server->textAll("w:STA");
   #ifdef BATTPIN
-  ws.textAll("type:battery");
+  server->textAll("type:battery");
   sendBattery();
   #else
-  ws.textAll("type:wall");
+  server->textAll("type:wall");
   #endif
-  ws.textAll("n:" + String(DEVICE_NAME));
+  server->textAll("n:" + String(DEVICE_NAME));
 }
 #ifdef BATTPIN
 void sendBattery()
@@ -229,13 +250,15 @@ void sendBattery()
     battVolt = 4200;
   int percent = map(battVolt, 3100, 4200, 0, 20) * 5;
   ws.textAll("batt:" + String(percent));
+  #ifdef USEUPNP
+  wws.textAll("batt:" + String(percent));
+  #endif
 }
 #endif
 void updateClients() {
   byte r = strp->getColor() >> 16;
   byte g = strp->getColor() >> 8;
   byte b = strp->getColor();
-  ws.textAll("p:" + String(strp->getPower()));
   String index;
   if (r < 10)
     index += "0";
@@ -246,8 +269,14 @@ void updateClients() {
   if (b < 10)
     index += "0";
   index += String(b, HEX);
+  ws.textAll("p:" + String(strp->getPower()));
   ws.textAll("c:#" + index);
   ws.textAll("b:" + String(strp->getBrightness()));
+  #ifdef USEUPNP
+  wws.textAll("p:" + String(strp->getPower()));
+  wws.textAll("c:#" + index);
+  wws.textAll("b:" + String(strp->getBrightness()));
+  #endif
 }
 void handleWiFi()
 {
@@ -261,6 +290,9 @@ void handleWiFi()
 #endif
 #ifdef USEOTA
   ArduinoOTA.handle();
+#endif
+#ifdef USEUPNP
+tinyUPnP->updatePortMappings(600000);
 #endif
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)

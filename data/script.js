@@ -1,5 +1,5 @@
 
-var gateway = `ws://${window.location.hostname}/ws`;
+var gateway = `ws://${window.location.hostname}:${window.location.port}/ws`;
 var websocket;
 var animButtons;
 var animCount = 0;

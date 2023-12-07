@@ -19,7 +19,7 @@ typedef void (*semaPtr) (SemaphoreHandle_t*);
 
 class AnimationHelper {
     public:
-    AnimationHelper(int n, uint8_t p);
+    AnimationHelper(int n, uint8_t p, int t);
 
     void begin();
     void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
@@ -43,6 +43,7 @@ class AnimationHelper {
 
     private:
     uint8_t pin;
+    int type;
     Adafruit_NeoPixel* strip; 
     uint32_t color;
     int NLEDS = 0;

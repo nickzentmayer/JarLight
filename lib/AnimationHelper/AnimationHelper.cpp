@@ -1,11 +1,12 @@
 #include "AnimationHelper.h"
 
-AnimationHelper::AnimationHelper(int n, uint8_t p) {
+AnimationHelper::AnimationHelper(int n, uint8_t p, int t) {
     NLEDS = n;
     pin = p;
+    type = t;
 }
 void AnimationHelper::begin() {
-    strip = new Adafruit_NeoPixel(NLEDS, pin, NEO_GRB + NEO_KHZ800);
+    strip = new Adafruit_NeoPixel(NLEDS, pin, type);
     strip->begin();
     strip->setBrightness(brightness);
     strip->show();

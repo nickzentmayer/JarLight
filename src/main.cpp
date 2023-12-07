@@ -2,15 +2,17 @@
 #include <Arduino.h>
 #include <wifiHelper.h>
 #include <AnimationHelper.h>
-#include <mpu6500.h>
 //custom files
 #include "config.h"
 #include "animations/animations.h"
 
 // create leds in memory
 //declare mpu objuect
+#ifdef USEMPU
+#include <mpu6500.h>
 MPU mpu(MPUADDR);
-AnimationHelper strip(NUMLEDS, DATAPIN);
+#endif
+AnimationHelper strip(NUMLEDS, DATAPIN, NEOTYPE);
 
 
 void setup() {
@@ -22,8 +24,6 @@ void setup() {
   
   for(int i = 0; i < (sizeof(animations)/sizeof(Animation)); i++) strip.addAnimation(&(animations[i].name), animations[i].anim);
   strip.setAnimationSemaphore(setSemaphore);
-  mpu.setupInt();
-  pinMode(MPUINT, INPUT);
   strip.setColor(0, 0, 100, true);
   if(!wifiSetup(&strip)) {
     Serial.println("FAIL");
@@ -37,15 +37,21 @@ void setup() {
   else strip.setColor(0, 255, 0, true);
   delay(1000);
   strip.setColor(100, 100, 100, true);
+  #ifdef USEMPU
+  mpu.setupInt();
+  pinMode(MPUINT, INPUT);
   mpu.clearInt();
+  #endif
 }
 
 void loop() {
   handleWiFi();
+  #ifdef USEMPU
   if(digitalRead(MPUINT)) {
     strip.setPower(!strip.getPower());
     mpu.clearInt();
     updateClients();
     delay(50); //"debounce"
   }
+  #endif
 }
