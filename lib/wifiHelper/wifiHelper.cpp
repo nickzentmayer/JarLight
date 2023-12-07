@@ -47,6 +47,8 @@ bool wifiConnect(bool showLeds)
     if (res)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
+      tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
+      tinyUPnP->commitPortMappings();
     delay(2000);
     strp->setColor(c, true);
   }
@@ -106,8 +108,6 @@ bool wifiSetup(AnimationHelper *s)
   wanServer.begin();
   wws.onEvent(wsOnEvent);
   wanServer.addHandler(&wws);
-  tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
-  tinyUPnP->commitPortMappings();
   #endif
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
