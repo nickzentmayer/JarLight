@@ -53,7 +53,7 @@ bool wifiConnect(bool showLeds)
         while (name.indexOf(' ') > 0)
         name.remove(name.indexOf(' '), 1);
         EasyDDNS.service(DDNS_SERVICE);
-        EasyDDNS.client(name, DDNS_TOKEN);
+        EasyDDNS.client(name + ".duckdns.org", DDNS_TOKEN);
         EasyDDNS.onUpdate([&](const char* oldIP, const char* newIP){
           Serial.print("EasyDDNS - IP Change Detected: ");
           Serial.println(newIP);
@@ -65,7 +65,6 @@ bool wifiConnect(bool showLeds)
     if (res)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
-      
     delay(2000);
     strp->setColor(c, true);
   }
