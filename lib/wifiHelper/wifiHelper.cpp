@@ -1,6 +1,11 @@
 #include "wifiHelper.h"
 
 AsyncWebServer server(PORT);
+#ifdef USEUPNP
+AsyncWebServer wanServer(UPNP_PORT);
+TinyUPnP *tinyUPnP = new TinyUPnP(20000);
+AsyncWebSocket wws("/ws");
+#endif
 AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
@@ -12,9 +17,10 @@ bool wifiConnect(bool showLeds)
   bool res = true;
   if (showLeds)
   {
-    strp->setColor(0x000055, true);
+    strp->setColor(RgbColor(0, 0, 150), true);
   }
   WiFi.mode(WIFI_STA);
+  WiFi.setHostname(DEVICE_NAME);
   WiFi.begin(SSID, PSWD);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
@@ -36,10 +42,29 @@ bool wifiConnect(bool showLeds)
     }
     res = false;
   }
+  else {
+    #ifdef USEUPNP
+      tinyUPnP->addPortMappingConfig(WiFi.localIP(), UPNP_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, DEVICE_NAME);
+      tinyUPnP->commitPortMappings();
+      #endif
+      #ifdef USE_DDNS
+        String name = DEVICE_NAME;
+        name.toLowerCase();
+        while (name.indexOf(' ') > 0)
+        name.remove(name.indexOf(' '), 1);
+        EasyDDNS.service(DDNS_SERVICE);
+        EasyDDNS.client(name + ".duckdns.org", DDNS_TOKEN);
+        EasyDDNS.onUpdate([&](const char* oldIP, const char* newIP){
+          Serial.print("EasyDDNS - IP Change Detected: ");
+          Serial.println(newIP);
+      });
+        #endif
+  }
   if (showLeds)
   {
     if (res)
       strp->setColor(RgbColor(0, 255, 0), true);
+      WiFi.setHostname(DEVICE_NAME);
     delay(2000);
     strp->setColor(c, true);
   }
@@ -93,6 +118,13 @@ bool wifiSetup(AnimationHelper *s)
   server.on("/", handleIndex);
   server.onNotFound(sendFile);
   server.begin();
+  #ifdef USEUPNP
+  wanServer.on("/", handleIndex);
+  wanServer.onNotFound(sendFile);
+  wanServer.begin();
+  wws.onEvent(wsOnEvent);
+  wanServer.addHandler(&wws);
+  #endif
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
@@ -106,7 +138,11 @@ void handleIndex(AsyncWebServerRequest *req)
 }
 void sendFile(AsyncWebServerRequest *req)
 {
-  req->send(SPIFFS, req->url(), "file");
+  String url = req->url();
+  String type = "text/";
+  if(url.indexOf('.') >= 0) type.concat(url.substring(url.indexOf('.')+1));
+  else type.concat("html");
+  req->send(SPIFFS, url, type);
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -116,13 +152,13 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   {
   case WS_EVT_CONNECT:
     Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-    dataOnConnect();
+    dataOnConnect(server);
     break;
   case WS_EVT_DISCONNECT:
     Serial.printf("WebSocket client #%u disconnected\n", client->id());
     break;
   case WS_EVT_DATA:
-    handleWebSocketMessage(arg, data, len, client->id());
+    handleWebSocketMessage(arg, data, len, client->id(), server);
     break;
   case WS_EVT_PONG:
     break;
@@ -131,7 +167,7 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, AsyncWebSocket* server)
 {
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
@@ -141,7 +177,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
     if (msg.equals("getAnimations"))
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
-        ws.text(id, "a:" + *(strp->getAnimationNames()[i]));
+        server->text(id, "a:" + *(strp->getAnimationNames()[i]));
     }
     if (msg.startsWith("p:"))
     {
@@ -178,22 +214,29 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id)
         recon = true;
       }
     }
+    #ifdef USEMPU
     if (msg.startsWith("s:"))
     {
-      strp->setColor(RgbColor(0, 0, 0), true);
-      delay(50);
+      strp->setColor(0, true);
+      WiFi.mode(WIFI_OFF); //idk if this will make esp draw less current in sleep but cant hurt
+      #ifdef ESP32C3
       esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      #endif
+      #ifdef ESP32DEV
+      esp_sleep_enable_ext0_wakeup(MPUINT, 1);
+      #endif
       esp_deep_sleep_start();
     }
+    #endif
   }
 }
 
-void dataOnConnect()
+void dataOnConnect(AsyncWebSocket* server)
 {
   byte r = strp->getColor().R;
   byte g = strp->getColor().G;
   byte b = strp->getColor().B;
-  ws.textAll("p:" + String(strp->getPower()));
+  server->textAll("p:" + String(strp->getPower()));
   String index;
   if (r < 10)
     index += "0";
@@ -204,19 +247,19 @@ void dataOnConnect()
   if (b < 10)
     index += "0";
   index += String(b, HEX);
-  ws.textAll("c:#" + index);
-  ws.textAll("b:" + String(strp->getBrightness()));
+  server->textAll("c:#" + index);
+  server->textAll("b:" + String(strp->getBrightness()));
   if (WiFi.getMode() == WIFI_AP)
-    ws.textAll("w:AP");
+    server->textAll("w:AP");
   else
-    ws.textAll("w:STA");
+    server->textAll("w:STA");
   #ifdef BATTPIN
-  ws.textAll("type:battery");
+  server->textAll("type:battery");
   sendBattery();
   #else
-  ws.textAll("type:wall");
+  server->textAll("type:wall");
   #endif
-  ws.textAll("n:" + String(DEVICE_NAME));
+  server->textAll("n:" + String(DEVICE_NAME));
 }
 #ifdef BATTPIN
 void sendBattery()
@@ -230,8 +273,34 @@ void sendBattery()
     battVolt = 4200;
   int percent = map(battVolt, 3100, 4200, 0, 20) * 5;
   ws.textAll("batt:" + String(percent));
+  #ifdef USEUPNP
+  wws.textAll("batt:" + String(percent));
+  #endif
 }
 #endif
+void updateClients() {
+  byte r = strp->getColor().R;
+  byte g = strp->getColor().G;
+  byte b = strp->getColor().B;
+  String index;
+  if (r < 10)
+    index += "0";
+  index += String(r, HEX);
+  if (g < 10)
+    index += "0";
+  index += String(g, HEX);
+  if (b < 10)
+    index += "0";
+  index += String(b, HEX);
+  ws.textAll("p:" + String(strp->getPower()));
+  ws.textAll("c:#" + index);
+  ws.textAll("b:" + String(strp->getBrightness()));
+  #ifdef USEUPNP
+  wws.textAll("p:" + String(strp->getPower()));
+  wws.textAll("c:#" + index);
+  wws.textAll("b:" + String(strp->getBrightness()));
+  #endif
+}
 void handleWiFi()
 {
 #ifdef BATTPIN
@@ -244,6 +313,12 @@ void handleWiFi()
 #endif
 #ifdef USEOTA
   ArduinoOTA.handle();
+#endif
+#ifdef USEUPNP
+tinyUPnP->updatePortMappings(600000);
+#endif
+#ifdef USE_DDNS
+EasyDDNS.update(10000);
 #endif
   ws.cleanupClients();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)

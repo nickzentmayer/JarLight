@@ -58,9 +58,9 @@ void AnimationHelper::setAnimation(int a) {
         xTaskHandle animTask = xTaskGetHandle("Animation Task");
         if(animTask != NULL) 
         {
-            xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+            xSemaphoreTake(xSemaphore, portMAX_DELAY);
             vTaskDelete(animTask);
-            xSemaphoreGive(*xSemaphore);
+            xSemaphoreGive(xSemaphore);
             Serial.println("delete");
         }
         if(animation != -1) {
@@ -97,17 +97,17 @@ void AnimationHelper::setPower(bool p) {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
             if(animTask != NULL) 
             {
-                xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+                xSemaphoreTake(xSemaphore, portMAX_DELAY);
                 vTaskSuspend(animTask);
-                xSemaphoreGive(*xSemaphore);
+                xSemaphoreGive(xSemaphore);
             }
         }
         fill(RgbColor(0, 0, 0));
         strip->Show();
     }
 }
-void AnimationHelper::setAnimationSemaphore(SemaphoreHandle_t* s) {
-    xSemaphore = s;
+void AnimationHelper::setAnimationSemaphore(semaPtr s) {
+    s(&xSemaphore);
 }
 
 void AnimationHelper::fill(RgbColor c) {

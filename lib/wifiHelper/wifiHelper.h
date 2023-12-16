@@ -5,6 +5,12 @@
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
+#ifdef USEUPNP
+#include <TinyUPnP.h>
+#endif
+#ifdef USE_DDNS
+#include <EasyDDNS.h>
+#endif
 
 bool wifiSetup(AnimationHelper* s);
 
@@ -12,8 +18,9 @@ void handleIndex(AsyncWebServerRequest *req);
 void sendFile(AsyncWebServerRequest *req);
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
              void *arg, uint8_t *data, size_t len);
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id);
-void dataOnConnect();
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, AsyncWebSocket* server);
+void dataOnConnect(AsyncWebSocket* server);
+void updateClients();
 void handleWiFi();
 #ifdef BATTPIN
 void sendBattery();

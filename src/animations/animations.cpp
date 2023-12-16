@@ -1,17 +1,20 @@
 #define ANIM
 #include "animations.h"
 
-SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
+SemaphoreHandle_t* xSemaphore;
+
+void setSemaphore(SemaphoreHandle_t* s) {
+  xSemaphore = s;
+}
 
 void cycle(void* s)  {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
     float fph;
     //strip->setPin(strip->getPin());
     Serial.println("start cycle");
     for(;;) {
-    xSemaphoreTake( xSemaphore, portMAX_DELAY);
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     float hue = fph;
     for(int i = 0; i < strip->PixelCount(); i++) {
       
@@ -21,7 +24,7 @@ void cycle(void* s)  {
     fph += 1.0/(strip->PixelCount()*5);
     if(fph >= 1.0) fph = 0;
     strip->Show();
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(1);
     }
 }
@@ -47,14 +50,13 @@ void fadeall(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip, byte dec) {
 
 void cylon(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   bool dir;
   int pos;
   float hue;
   //strip->setPin(strip->getPin());
   for(;;) {
-    xSemaphoreTake( xSemaphore, portMAX_DELAY);
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     // Set the i'th led to red 
     if(dir) strip->SetPixelColor(pos--/2, HsbColor(hue++, 1, 1));
     else strip->SetPixelColor(pos++/2, HsbColor(hue++, 1, 1));
@@ -67,35 +69,33 @@ void cylon(void* s) {
     // Wait a little bit before we loop around and do it again
     if(pos/2 >= strip->PixelCount() - 1 || pos < 0) dir = !dir;
     strip->Show();
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(1);
   }
 }
 
 void halloween(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   //strip->setPin(strip->getPin());
   for(;;) {
-    xSemaphoreTake( xSemaphore, portMAX_DELAY);
+    xSemaphoreTake( *xSemaphore, portMAX_DELAY);
   for(int i = 0; i < 1; i++) {
     strip->SetPixelColor(random(strip->PixelCount()-1), RgbColor(255, 85, 0));
     strip->SetPixelColor(random(strip->PixelCount()-1), RgbColor(255, 0, 185));
   }
   fadeall(strip, 10);
   strip->Show();
-  xSemaphoreGive(xSemaphore);
+  xSemaphoreGive(*xSemaphore);
   vTaskDelay(50);
   }
 }
 
 void fall(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
-    xSemaphoreTake(xSemaphore, portMAX_DELAY);
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 1; i++) {
       switch (random(3))
       {
@@ -114,17 +114,16 @@ void fall(void* s) {
   }
     fadeall(strip, 7);
     strip->Show();
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(25);
   }
 }
 
 void christmas(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
-    xSemaphoreTake(xSemaphore, portMAX_DELAY);
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
       switch (random(5))
       {
@@ -143,17 +142,16 @@ void christmas(void* s) {
   }
     fadeall(strip, 5);
     strip->Show();
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(25);
   }
 }
 
 void twinkle(void* s) {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
-  helper->setAnimationSemaphore(&xSemaphore);
   NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
   for(;;) {
-    xSemaphoreTake(xSemaphore, portMAX_DELAY);
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
       switch (random(3))
       {
@@ -166,7 +164,25 @@ void twinkle(void* s) {
   }
     fadeall(strip, 5);
     strip->Show();
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(25);
+  }
+}
+
+void candyCane(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    int shift;
+    for(int i = 0; i < strip->PixelCount(); i++) {
+      if(i % 10 < 5) strip->SetPixelColor(i, RgbColor(255, 0, 0));
+      else strip->SetPixelColor(i, RgbColor(255, 255, 255));
+  }
+    strip->ShiftRight(shift++);
+    if(shift >= strip->PixelCount()) shift = 0;
+    strip->Show();
+    xSemaphoreGive(*xSemaphore);
     vTaskDelay(25);
   }
 }

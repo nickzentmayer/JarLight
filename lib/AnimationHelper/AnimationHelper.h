@@ -17,6 +17,7 @@ and still have a responsive web interface*/
 #define ANIMHELPER
 
 typedef void (*animPtr) (void*);
+typedef void (*semaPtr) (SemaphoreHandle_t*);
 
 class AnimationHelper {
     public:
@@ -31,7 +32,7 @@ class AnimationHelper {
     void setAnimation(int a);
     void setBrightness(byte b);
     void setPower(bool p);
-    void setAnimationSemaphore(SemaphoreHandle_t* s);
+    void setAnimationSemaphore(semaPtr);
 
     bool getPower();
     byte getBrightness();
@@ -51,7 +52,7 @@ class AnimationHelper {
     bool power = true;
     byte brightness = 100;
     int animation = -1;
-    SemaphoreHandle_t* xSemaphore;
+    SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
     animPtr* animations = NULL;
     String** animNames;
     int numAnims = 0;

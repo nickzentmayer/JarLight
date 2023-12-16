@@ -17,6 +17,7 @@
     void setSemaphore(SemaphoreHandle_t* xSem);
     void christmas(void* s);
     void twinkle(void* s);
+    void candyCane(void* s);
     
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
@@ -24,5 +25,6 @@
                               {halloween, "Halloween"}, 
                               {fall, "Fall"},
                               {christmas, "Christmas"},
-                              {twinkle, "Twinkle"}};
+                              {twinkle, "Twinkle"},
+                              {candyCane, "Candy Cane"}};
     #endif
