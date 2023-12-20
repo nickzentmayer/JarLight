@@ -25,9 +25,9 @@ class AnimationHelper {
 
     void begin();
     void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
-    void setColorHsv(float h, float s, float v, bool sho = false);
-    void setColor(RgbColor c, bool sho = false);
-    void showColor();
+    void setColorHsv(uint8_t h, uint8_t s, uint8_t v, bool sho = false);
+    void setColor(uint32_t c, bool sho = false);
+    void show();
     void addAnimation(String* name, void (*anim)(void*));
     void setAnimation(int a);
     void setBrightness(byte b);
@@ -35,13 +35,18 @@ class AnimationHelper {
     void setPower(bool p);
     void setAnimationSemaphore(semaPtr);
 
+    void setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool sho = false);
+    void setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho = false);
+    void setPixelColor(int p, uint32_t c, bool sho = false);
+    uint32_t getPixelColor(int p);
+
     bool getPower();
     byte getBrightness();
     float getSpeed();
     int getAnimation();
     String** getAnimationNames();
     int getNumberAnimations();
-    RgbColor getColor();
+    uint32_t getColor();
     NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
     void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
 

@@ -13,17 +13,17 @@ void AnimationHelper::begin() {
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
     color = RgbColor(r, g, b);
-    if(sho) showColor();
+    if(sho) show();
 }
-void AnimationHelper::setColorHsv(float h, float s, float v, bool sho) {
-    color = (RgbColor)HsbColor(h, s, v);
-    if(sho) showColor();
+void AnimationHelper::setColorHsv(uint8_t h, uint8_t s, uint8_t v, bool sho) {
+    color = (RgbColor)HslColor((float)h/255.0, (float)s/255.0, (float)v/255.0);
+    if(sho) show();
 }
-void AnimationHelper::setColor(RgbColor c, bool sho) {
+void AnimationHelper::setColor(uint32_t c, bool sho) {
     color = c;
-    if(sho) showColor();
+    if(sho) show();
 }
-void AnimationHelper::showColor() 
+void AnimationHelper::show() 
 {
 if(animation != -1)setAnimation(-1);
 fill(color);
@@ -89,7 +89,7 @@ void AnimationHelper::setAnimation(int a) {
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
     strip->SetBrightness(brightness);
-    if(animation == -1 && power) showColor();
+    if(animation == -1 && power) show();
 }
 void AnimationHelper::setSpeed(byte s) {
     speed = (float)s / 255.0;
@@ -98,7 +98,7 @@ void AnimationHelper::setPower(bool p) {
     power = p;
     if(p) 
     {
-        if(animation == -1) showColor();
+        if(animation == -1) show();
         else 
         {
             xTaskHandle animTask = xTaskGetHandle("Animation Task");
@@ -125,6 +125,23 @@ void AnimationHelper::setAnimationSemaphore(semaPtr s) {
     s(&xSemaphore);
 }
 
+void AnimationHelper::setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool sho) {
+    strip->SetPixelColor(p, RgbColor(r, g, b));
+    if(sho) show();
+}
+void AnimationHelper::setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho) {
+    strip->SetPixelColor(p, HslColor((float)h/255.0, (float)s/255.0, (float)v/255.0));
+    if(sho) show();
+}
+void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
+    strip->SetPixelColor(p, HtmlColor(c));
+    if(sho) show();
+}
+uint32_t AnimationHelper::getPixelColor(int p) {
+    RgbColor c = strip->GetPixelColor(p);
+    return HtmlColor(c).Color;
+}
+
 void AnimationHelper::fill(RgbColor c) {
     for(int i=0; i<NUMLEDS; i++) 
         strip->SetPixelColor(i, c);
@@ -148,8 +165,8 @@ String** AnimationHelper::getAnimationNames() {
 int AnimationHelper::getNumberAnimations() {
     return numAnims;
 }
-RgbColor AnimationHelper::getColor() {
-    return color;
+uint32_t AnimationHelper::getColor() {
+    return (color.R << 16 + color.G << 8 + color.B);
 }
 NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
     return strip;

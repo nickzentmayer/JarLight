@@ -17,7 +17,7 @@ bool wifiConnect(bool showLeds)
   bool res = true;
   if (showLeds)
   {
-    strp->setColor(RgbColor(0, 0, 150), true);
+    strp->setColor(0x000077, true);
   }
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(DEVICE_NAME);
@@ -25,7 +25,7 @@ bool wifiConnect(bool showLeds)
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     if (showLeds)
-      strp->setColor(RgbColor(255, 0, 0), true);
+      strp->setColor(0xFF0000, true);
     if (USE_SOFT_AP)
     {
       WiFi.mode(WIFI_AP);
@@ -63,10 +63,10 @@ bool wifiConnect(bool showLeds)
   if (showLeds)
   {
     if (res)
-      strp->setColor(RgbColor(0, 255, 0), true);
+      strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
     delay(2000);
-    strp->setColor(c, true);
+    strp->setColor(HtmlColor(c).Color, true);
   }
   return res;
 }
@@ -254,9 +254,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
 
 void dataOnConnect(AsyncWebSocket* server)
 {
-  byte r = strp->getColor().R;
-  byte g = strp->getColor().G;
-  byte b = strp->getColor().B;
+  byte r = strp->getColor() >> 16;
+  byte g = strp->getColor() >> 8;
+  byte b = strp->getColor();
   server->textAll("p:" + String(strp->getPower()));
   String index;
   if (r < 10)
@@ -301,9 +301,9 @@ void sendBattery()
 }
 #endif
 void updateClients() {
-  byte r = strp->getColor().R;
-  byte g = strp->getColor().G;
-  byte b = strp->getColor().B;
+  byte r = strp->getColor() >> 16;
+  byte g = strp->getColor() >> 8;
+  byte b = strp->getColor();
   String index;
   if (r < 10)
     index += "0";
