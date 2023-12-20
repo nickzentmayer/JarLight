@@ -18,6 +18,8 @@
     void christmas(void* s);
     void twinkle(void* s);
     void candyCane(void* s);
+    void multiSparkle(void* s);
+    void chSparkle(void* s);
     
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
@@ -26,5 +28,7 @@
                               {fall, "Fall"},
                               {christmas, "Christmas"},
                               {twinkle, "Twinkle"},
-                              {candyCane, "Candy Cane"}};
+                              {candyCane, "Candy Cane"},
+                              {multiSparkle, "Multicolor Sparkle"},
+                              {chSparkle, "Christmas Sparkle"}};
     #endif

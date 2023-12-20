@@ -64,6 +64,17 @@ void AnimationHelper::setAnimation(int a) {
             Serial.println("delete");
         }
         if(animation != -1) {
+            #ifdef ESP32DEV
+            xTaskCreatePinnedToCore(
+                animations[animation],
+                "Animation Task",
+                2048,
+                this,
+                2,
+                NULL,
+                1);
+            #endif
+            #ifdef ESP32C3
             xTaskCreate(
                 animations[animation],
                 "Animation Task",
@@ -71,6 +82,7 @@ void AnimationHelper::setAnimation(int a) {
                 this,
                 2,
                 NULL);
+            #endif
         }
     setPower(power);
 }
@@ -78,6 +90,9 @@ void AnimationHelper::setBrightness(byte b) {
     brightness = b;
     strip->SetBrightness(brightness);
     if(animation == -1 && power) showColor();
+}
+void AnimationHelper::setSpeed(byte s) {
+    speed = (float)s / 255.0;
 }
 void AnimationHelper::setPower(bool p) {
     power = p;
@@ -120,6 +135,9 @@ bool AnimationHelper::getPower() {
 }
 byte AnimationHelper::getBrightness() {
     return brightness;
+}
+float AnimationHelper::getSpeed() {
+    return speed;
 }
 int AnimationHelper::getAnimation() {
     return animation;

@@ -31,6 +31,7 @@ function onMessage(event) {
     if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
     if (topic == 'c') document.getElementById('colorpicker').value = value;
     if (topic == 'b') document.getElementById('bright').value = value;
+    if (topic == 's') document.getElementById('speed').value = value;
     if (topic == 'batt') document.getElementById('batP').innerHTML = value + "%";
     if (topic == 'w') {
         if(value == 'AP') document.getElementById('recon').style.display = "inline";

@@ -31,11 +31,13 @@ class AnimationHelper {
     void addAnimation(String* name, void (*anim)(void*));
     void setAnimation(int a);
     void setBrightness(byte b);
+    void setSpeed(byte s);
     void setPower(bool p);
     void setAnimationSemaphore(semaPtr);
 
     bool getPower();
     byte getBrightness();
+    float getSpeed();
     int getAnimation();
     String** getAnimationNames();
     int getNumberAnimations();
@@ -51,6 +53,7 @@ class AnimationHelper {
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;
+    float speed = 0.5;
     int animation = -1;
     SemaphoreHandle_t xSemaphore = xSemaphoreCreateMutex();
     animPtr* animations = NULL;

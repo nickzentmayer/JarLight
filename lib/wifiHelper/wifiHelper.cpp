@@ -116,10 +116,12 @@ bool wifiSetup(AnimationHelper *s)
   MDNS.begin(name);
   WiFi.setHostname(DEVICE_NAME);
   server.on("/", handleIndex);
+  server.on("/manifest.json", handleManifest);
   server.onNotFound(sendFile);
   server.begin();
   #ifdef USEUPNP
   wanServer.on("/", handleIndex);
+  wanServer.on("/manifest.json", handleManifest);
   wanServer.onNotFound(sendFile);
   wanServer.begin();
   wws.onEvent(wsOnEvent);
@@ -136,6 +138,19 @@ void handleIndex(AsyncWebServerRequest *req)
 {
   req->send(SPIFFS, "/ui.html", "text/html");
 }
+
+void handleManifest(AsyncWebServerRequest *req)
+{
+  File m = SPIFFS.open("/manifest.json");
+  String data;
+  while(m.available()) {
+    char c = m.read();
+    if(c == '|') data += DEVICE_NAME;
+    else data += c;
+  }
+  req->send(200, "text/json", data);
+}
+
 void sendFile(AsyncWebServerRequest *req)
 {
   String url = req->url();
@@ -172,8 +187,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
   AwsFrameInfo *info = (AwsFrameInfo *)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
   {
+    
     data[len] = 0;
     String msg = String((char *)data);
+    String value = msg.substring(msg.indexOf(":") + 1);
     if (msg.equals("getAnimations"))
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
@@ -183,7 +200,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     {
       // power = msg.substring(msg.indexOf(":")+1).equals("true");
       // if(animation.equals("none")) upd = true;
-      strp->setPower(msg.substring(msg.indexOf(":") + 1).equals("true"));
+      strp->setPower(value.equals("true"));
     }
     if (msg.startsWith("c:"))
     {
@@ -197,7 +214,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     {
       // ledColor(0,0,0);
       // lAnim = animation;
-      strp->setAnimation(msg.substring(msg.indexOf(":") + 1).toInt());
+      strp->setAnimation(value.toInt());
       Serial.println(strp->getAnimation());
     }
     if (msg.startsWith("b:"))
@@ -205,17 +222,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       // brightness = msg.substring(msg.indexOf(":")+1).toInt();
       // FastLED.setBrightness(brightness);
       // upd = animation.equals("none");
-      strp->setBrightness(msg.substring(msg.indexOf(":") + 1).toInt());
+      strp->setBrightness(value.toInt());
     }
     if (msg.startsWith("w:"))
     {
-      if (msg.substring(msg.indexOf(":") + 1).equals("recon"))
+      if (value.equals("recon"))
       {
         recon = true;
       }
     }
-    #ifdef USEMPU
     if (msg.startsWith("s:"))
+    {
+      strp->setSpeed((byte)value.toInt());
+    }
+    #ifdef USEMPU
+    if (msg.startsWith("sleep:"))
     {
       strp->setColor(0, true);
       WiFi.mode(WIFI_OFF); //idk if this will make esp draw less current in sleep but cant hurt
@@ -249,6 +270,7 @@ void dataOnConnect(AsyncWebSocket* server)
   index += String(b, HEX);
   server->textAll("c:#" + index);
   server->textAll("b:" + String(strp->getBrightness()));
+  server->textAll("s:" + String(strp->getSpeed()*255));
   if (WiFi.getMode() == WIFI_AP)
     server->textAll("w:AP");
   else

@@ -176,13 +176,88 @@ void candyCane(void* s) {
     xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     int shift;
     for(int i = 0; i < strip->PixelCount(); i++) {
-      if(i % 10 < 5) strip->SetPixelColor(i, RgbColor(255, 0, 0));
-      else strip->SetPixelColor(i, RgbColor(255, 255, 255));
+      int p = (i+shift) % strip->PixelCount();
+      if(i % 10 < 5) strip->SetPixelColor(p, RgbColor(255, 0, 0));
+      else strip->SetPixelColor(p, RgbColor(255, 255, 255));
   }
-    strip->ShiftRight(shift++);
+    strip->RotateRight(shift++);
     if(shift >= strip->PixelCount()) shift = 0;
     strip->Show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(150 * (1.0 - helper->getSpeed())));
+  }
+}
+
+void multiSparkle(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  float sat[strip->PixelCount()];
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    for(int i = 0; i < random(3); i++) {
+      int r = random(strip->PixelCount());
+      sat[r] = 0;
+    }
+
+    for(int i = 0; i < strip->PixelCount(); i++) {
+      switch (i % 4)
+      {
+      case 0:
+        strip->SetPixelColor(i, HsbColor(0.0, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+        case 1:
+        strip->SetPixelColor(i, HsbColor(0.135, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+        case 2:
+        strip->SetPixelColor(i, HsbColor(0.33, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+        case 3:
+        strip->SetPixelColor(i, HsbColor(0.67, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+      
+      default:
+        break;
+      }
+      if(sat[i] < 1.0) sat[i] += 0.1;
+  }
+    strip->Show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(abs(150 * (1.0 - helper->getSpeed())));
+  }
+}
+
+void chSparkle(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip = helper->getStrip();
+  float sat[strip->PixelCount()];
+  for(int i = 0; i < strip->PixelCount(); i++) sat[i] = 1.0;
+  byte count = random(3, 8);
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    if(count-- == 0) {
+    for(int i = 0; i < random(3); i++) {
+      int r = random(strip->PixelCount());
+      sat[r] = 0;
+    }
+    count = random(3, 8);
+    }
+    for(int i = 0; i < strip->PixelCount(); i++) {
+      switch (i % 2)
+      {
+      case 0:
+        strip->SetPixelColor(i, HsbColor(0.0, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+        case 1:
+        strip->SetPixelColor(i, HsbColor(0.333, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0));
+        break;
+      
+      default:
+        break;
+      }
+      if(sat[i] < 1.0) sat[i] += 0.05;
+  }
+    strip->Show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
   }
 }

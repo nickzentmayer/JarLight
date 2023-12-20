@@ -141,7 +141,7 @@ html {
                 border: none;
             }
 
-            #bright {
+            .slide {
                 -webkit-appearance: none;
                 /* Override default CSS styles */
                 appearance: none;
@@ -160,18 +160,18 @@ html {
                 transition: opacity .2s;
             }
 
-            #bright:hover {
+            .slide:hover {
                 opacity: 1;
                 /* Fully shown on mouse-over */
             }
 
             /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-            #bright::-webkit-slider-thumb {
+            .slide::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 /* Override default look */
-                height: 25px;
+                height: 35px;
                 border-radius: 50%;
-                width: 25px;
+                width: 35px;
                 /* Set a specific slider handle width */
                 /* Slider handle height */
                 background: #ff0000;
@@ -180,10 +180,10 @@ html {
                 /* Cursor on hover */
             }
 
-            #bright::-moz-range-thumb {
-                width: 25px;
+            .slide::-moz-range-thumb {
+                width: 35px;
                 /* Set a specific slider handle width */
-                height: 25px;
+                height: 35px;
                 border-radius: 50%;
                 background: #ff0000;
                 /* Green background */

@@ -15,7 +15,7 @@
 //local webserver port
 #define PORT 80
 //probably unessicary and pretty insecure but its here :))))
-//#define USEUPNP
+#define USEUPNP
 #define UPNP_PORT 6996 //port for upnp to forward and websever to be on, will NOT overwrite local port
 #define LEASE_DURATION 604800
 //setting for dynamic dns (for use with upnp)
@@ -25,9 +25,10 @@
 #define DDNS_SERVICE "duckdns"
 #endif
 //led config
-#define NUMLEDS 50
+#define NUMLEDS 150
 #define DATAPIN 13
-#define NEOTYPE NEO_RGB + NEO_KHZ800
+#define PIXELTYPE NeoRgbFeature
+#define PIXELSPEED Neo800KbpsMethod
 //mpu config
 //#define USEMPU //comment out if not connected to mpu6500
 #define MPUINT D3
