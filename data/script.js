@@ -1,5 +1,5 @@
 
-var gateway = `ws://${window.location.hostname}/ws`;
+var gateway = `ws://${window.location.hostname}:${window.location.port}/ws`;
 var websocket;
 var animButtons;
 var animCount = 0;
@@ -69,6 +69,23 @@ function onLoad(event) {
     animButtons = document.getElementById("animations");
 }
 
+function sendTimer() {
+    if(document.getElementById("onTime").value != "" && document.getElementById("offTime").value != "") {
+    console.log(document.getElementById("onTime").value);
+    console.log(document.getElementById("offTime").value);
+    sendMsg('t:on:'+document.getElementById("onTime").value.toString());
+    sendMsg('t:off:'+document.getElementById("offTime").value.toString());
+    }
+    else {
+        if(document.getElementById("onTime").value == "") invalidFlash("onTime");
+        if(document.getElementById("offTime").value == "") invalidFlash("offTime");
+    }
+}
+async function invalidFlash(id) {
+    let elem = document.getElementById(id);
+    elem.style.color = 'red';
+    setTimeout(() => { elem.style.color = 'white' }, 2000);
+}
 
 
 

@@ -44,6 +44,7 @@ class AnimationHelper {
     byte getBrightness();
     float getSpeed();
     int getAnimation();
+    int pixelCount();
     String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();

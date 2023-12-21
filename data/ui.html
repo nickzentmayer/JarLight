@@ -36,8 +36,20 @@
         </div>
         <div id="animations">
             <h3>Animations</h3>
+            <p>Loading...</p>
         </div>
         <br>
+        <div id="timer">
+          <h3>Timer</h3>
+          <p>On at: </p>
+          <input type="time" id="onTime" class="time" name="onTime">
+          <br>
+          <p>Off at: </p>
+          <input type="time" id="offTime" class="time" name="offTime">
+          <br>
+          <br>
+          <button id="saveTimer" onclick="sendTimer()">Save Timer</button>
+        </div>
         <input type="button" value="Reconnect to Network" class="animButtons" id="recon" onclick="sendMsg('w:recon')">
         <br>
         <div id="sleep">

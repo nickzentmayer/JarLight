@@ -1,6 +1,6 @@
 html {
                 display: block;
-                margin: 0;
+                margin: 50px;
                 text-align: center;
                 padding: 0;
             }
@@ -195,4 +195,24 @@ html {
             }
             #sleep{
                 display: none;
+            }
+            .time {
+                background-color:rgb(8, 8, 8);
+                color:#ffffff;
+                width: 100px;
+                height: 40px;
+                transform: translateX(-5px);
+                display: inline-block;
+                border-color: white;
+                border-radius: 5px;
+            }
+            #saveTimer {
+                background-color: #111111;
+                margin: 10px;
+                color:#ffffff;
+                border-color: #ff0000;
+                border-radius: 25px;
+                width: 25%;
+                height: 30px;
+                font-size: medium;
             }

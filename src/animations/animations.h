@@ -17,15 +17,16 @@
     void setSemaphore(SemaphoreHandle_t* xSem);
     void christmas(void* s);
     void twinkle(void* s);
-    void candyCane(void* s);
-    void multiSparkle(void* s);
-    void chSparkle(void* s);
-    
+    uint32_t NewFunction(AnimationHelper *helper);
+    void candyCane(void *s);
+    void multiSparkle(void *s);
+    void chSparkle(void *s);
+
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
                               {cycle, "Cycle"},
-                              {halloween, "Halloween"}, 
-                              {fall, "Fall"},
+                              //{halloween, "Halloween"}, 
+                              //{fall, "Fall"},
                               {christmas, "Christmas"},
                               {twinkle, "Twinkle"},
                               {candyCane, "Candy Cane"},

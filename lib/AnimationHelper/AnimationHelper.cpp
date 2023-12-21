@@ -159,6 +159,9 @@ float AnimationHelper::getSpeed() {
 int AnimationHelper::getAnimation() {
     return animation;
 }
+int AnimationHelper::pixelCount() {
+    return strip->PixelCount();
+}
 String** AnimationHelper::getAnimationNames() {
     return animNames;
 }
