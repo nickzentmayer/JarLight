@@ -1,6 +1,6 @@
 #define ANIM
 #include "animations.h"
-#define FADEBY 15
+#define FADEBY 3
 
 SemaphoreHandle_t* xSemaphore;
 
@@ -210,19 +210,19 @@ void multiSparkle(void* s) {
         helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 65));
         break;
         case 1:
-        helper->setPixelColor(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
         break;
         case 2:
-        helper->setPixelColor(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
         break;
         case 3:
-        helper->setPixelColor(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
         break;
       
       default:
         break;
       }
-      if(sat[i] < 255 && ((int)sat + FADEBY) > 255) sat[i] = 255;
+      if(sat[i] < 255 && ((int)sat[i] + FADEBY) > 255) sat[i] = 255;
       else if(sat[i] < 255) sat[i] += FADEBY;
   }
     helper->show();
@@ -236,7 +236,7 @@ void chSparkle(void* s) {
   int pixelCount = helper->pixelCount();
   byte sat[pixelCount];
   for(int i = 0; i < pixelCount; i++) sat[i] = 255;
-  byte count = random(3, 8);
+  byte count = random(0, 3);
   for(;;) {
     xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     if(count-- == 0) {
@@ -250,16 +250,16 @@ void chSparkle(void* s) {
       switch (i % 2)
       {
       case 0:
-        helper->setPixelColorHsv(i, 0.0, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0);
+        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 75));
         break;
         case 1:
-        helper->setPixelColorHsv(i, 0.333, sat[i], (float)map(sat[i]*100, 0, 100, 100, 25)/100.0);
+        helper->setPixelColorHsv(i, 0.333*255, sat[i], (float)map(sat[i], 0, 255, 255, 75));
         break;
       
       default:
         break;
       }
-      if(sat[i] < 255 && ((int)sat + FADEBY) > 255) sat[i] = 255;
+      if(sat[i] < 255 && ((int)sat[i] + FADEBY) > 255) sat[i] = 255;
       else if(sat[i] < 255) sat[i] += FADEBY;
   }
     helper->show();;

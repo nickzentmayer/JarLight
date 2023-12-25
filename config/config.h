@@ -27,8 +27,8 @@
 //led config
 #define NUMLEDS 150
 #define DATAPIN 13
-#define PIXELTYPE NeoRgbFeature
-#define PIXELSPEED Neo800KbpsMethod
+#define PIXELTYPE RGB
+#define PIXELSPEED WS2812
 //mpu config
 //#define USEMPU //comment out if not connected to mpu6500
 #define MPUINT D3
@@ -36,3 +36,6 @@
 #define MPUTHRESHOLD 125
 //battery config, comment out to not use battery
 //#define BATTPIN D0
+
+//time config
+#define TIMEZONE -5

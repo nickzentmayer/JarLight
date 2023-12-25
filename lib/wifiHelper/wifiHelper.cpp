@@ -10,10 +10,24 @@ AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
 
+Timer* timerOn = nullptr;
+Timer* timerOff = nullptr;
+
+void powerOn() {
+  strp->powerOn();
+  ws.textAll("p:1");
+  wws.textAll("p:1");
+}
+void powerOff() {
+  strp->powerOff();
+  ws.textAll("p:0");
+  wws.textAll("p:0");
+}
+
 bool wifiConnect(bool showLeds)
 {
   Serial.println("wifi connect");
-  RgbColor c = strp->getColor();
+  CRGB c = strp->getColor();
   bool res = true;
   if (showLeds)
   {
@@ -66,7 +80,7 @@ bool wifiConnect(bool showLeds)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
     delay(2000);
-    strp->setColor(HtmlColor(c).Color, true);
+    strp->setColor((uint32_t)c, true);
   }
   return res;
 }
@@ -130,6 +144,23 @@ bool wifiSetup(AnimationHelper *s)
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
+  if(SPIFFS.exists("/timer.tmr") && SPIFFS.open("/timer.tmr").size() > 1) {
+    File tF = SPIFFS.open("/timer.tmr");
+    tm times[2];
+    String temp = tF.readString();
+    tF.close();
+    //hh:mm:hh:mm
+    Serial.println(temp);
+    times[0].tm_hour = temp.substring(0, 2).toInt();
+    times[0].tm_min = temp.substring(3, 5).toInt();
+    times[1].tm_hour = temp.substring(6, 8).toInt();
+    times[1].tm_min = temp.substring(9).toInt();
+    timerOn = new Timer(times[0], powerOn);
+    timerOff = new Timer(times[1], powerOff);
+    timerOn->begin();
+    timerOff->begin();
+  }
+  
 
   return res;
 }
@@ -235,6 +266,54 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     {
       strp->setSpeed((byte)value.toInt());
     }
+    if(msg.startsWith("t:")) {
+      //t:mode:hh:mm
+      if(timerOn != nullptr)
+      ws.textAll("print:" + String(timerOn->getTime().tm_hour) + String(timerOn->getTime().tm_min));
+      tm time;
+      msg = msg.substring(msg.indexOf(':') + 1);
+      String type = msg.substring(0, msg.indexOf(":"));
+      msg = msg.substring(msg.indexOf(':') + 1);
+      time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
+      time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
+      String temp = "00:00:00:00";
+      if(SPIFFS.exists("/timer.tmr") && SPIFFS.open("/timer.tmr").size() > 1) {
+      File timerFile = SPIFFS.open("/timer.tmr", FILE_READ);
+      temp = timerFile.readString();
+      timerFile.close();
+      SPIFFS.remove("/timer.tmr");
+      delay(100);
+      }
+      File timerFile = SPIFFS.open("/timer.tmr", FILE_WRITE);
+      if(type.equals("check")) {
+        ws.textAll("print:" + String(timerOn->getTime().tm_hour)+":"+String(timerOn->getTime().tm_min));
+        //ws.textAll("print:" + String(uxTaskGetNumberOfTasks()));
+        return;
+      }
+      if(type.equals("on")) {
+        if(timerOn != nullptr) {
+          timerOn->end();
+          delete(timerOn);
+        }
+        timerOn = new Timer(time, powerOn);
+        timerOn->begin();
+        temp = msg + ":" + temp.substring(6);
+        ws.textAll("print:File=" + temp);
+      }
+      else {
+        if(timerOff != nullptr) {
+          timerOff->end();
+          delete(timerOff);
+        }
+        timerOff = new Timer(time, powerOff);
+        timerOff->begin();
+        temp = temp.substring(0, 5) + ":" + msg;
+        ws.textAll("print:File=" + temp);
+      }
+      for(int i = 0; i < temp.length(); i++) timerFile.write(temp.charAt(i));
+      delay(100);
+      timerFile.close();
+    }
     #ifdef USEMPU
     if (msg.startsWith("sleep:"))
     {
@@ -282,6 +361,13 @@ void dataOnConnect(AsyncWebSocket* server)
   server->textAll("type:wall");
   #endif
   server->textAll("n:" + String(DEVICE_NAME));
+  if(SPIFFS.exists("/timer.tmr")) {
+    File timer = SPIFFS.open("/timer.tmr");
+    String temp = "t:";
+    temp += timer.readString();
+    server->textAll(temp);
+    timer.close();
+  }
 }
 #ifdef BATTPIN
 void sendBattery()
@@ -300,7 +386,7 @@ void sendBattery()
   #endif
 }
 #endif
-void updateClients() {
+/*void updateClients() {
   byte r = strp->getColor() >> 16;
   byte g = strp->getColor() >> 8;
   byte b = strp->getColor();
@@ -322,7 +408,7 @@ void updateClients() {
   wws.textAll("c:#" + index);
   wws.textAll("b:" + String(strp->getBrightness()));
   #endif
-}
+}*/
 void handleWiFi()
 {
 #ifdef BATTPIN

@@ -5,6 +5,8 @@
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
+#include "Timer.h"
+#include <time.h>
 #ifdef USEUPNP
 #include <TinyUPnP.h>
 #endif

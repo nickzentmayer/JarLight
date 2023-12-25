@@ -38,7 +38,7 @@ void setup() {
   }
   else strip.setColor(0, 255, 0, true);
   delay(1000);
-  strip.setColor(100, 100, 100, true);
+  strip.setAnimation(5);
   #ifdef USEMPU
   mpu.setupInt();
   pinMode(MPUINT, INPUT);

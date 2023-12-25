@@ -29,6 +29,7 @@ function onMessage(event) {
     var value = event.data.toString().substring(event.data.toString().indexOf(':') + 1);
     console.log(topic + value)
     if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
+    else document.getElementById('powerSwitch').checked = false;
     if (topic == 'c') document.getElementById('colorpicker').value = value;
     if (topic == 'b') document.getElementById('bright').value = value;
     if (topic == 's') document.getElementById('speed').value = value;
@@ -55,6 +56,13 @@ function onMessage(event) {
             document.getElementById('battery').style.display = "none"; 
             document.getElementById('sleep').style.display = "none";
         }
+    }
+    if(topic == 't') {
+        document.getElementById("onTime").value = value.substring(0, 5);
+        document.getElementById("offTime").value = value.substring(6);
+    }
+    if(topic == 'print') {
+        console.log(value);
     }
 }
 window.addEventListener('load', onLoad);
@@ -84,9 +92,8 @@ function sendTimer() {
 async function invalidFlash(id) {
     let elem = document.getElementById(id);
     elem.style.color = 'red';
-    setTimeout(() => { elem.style.color = 'white' }, 2000);
+    setTimeout(() => { elem.style.color = 'white' }, 1000);
 }
-
 
 
 /*<input type="button" value="Cylon" class="animButtons" onclick="sendMsg('a:cylon')">

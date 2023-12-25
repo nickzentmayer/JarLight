@@ -1,6 +1,5 @@
 #pragma once
-#include <NeoPixelBus.h>
-#include <NeoPixelBrightnessBus.h>
+#include <FastLED.h>
 #include <Arduino.h>
 #include "config.h"
 
@@ -27,18 +26,21 @@ class AnimationHelper {
     void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
     void setColorHsv(uint8_t h, uint8_t s, uint8_t v, bool sho = false);
     void setColor(uint32_t c, bool sho = false);
-    void show();
+    void showColor();
     void addAnimation(String* name, void (*anim)(void*));
     void setAnimation(int a);
     void setBrightness(byte b);
     void setSpeed(byte s);
     void setPower(bool p);
     void setAnimationSemaphore(semaPtr);
+    void powerOn();
+    void powerOff();
 
     void setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool sho = false);
     void setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho = false);
     void setPixelColor(int p, uint32_t c, bool sho = false);
     uint32_t getPixelColor(int p);
+    void show();
 
     bool getPower();
     byte getBrightness();
@@ -48,14 +50,14 @@ class AnimationHelper {
     String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
-    void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
+    CRGB* getStrip();
+    void setStrip(CRGB* s);
 
     private:
-    void fill(RgbColor c);
+    void fill(CRGB c);
     uint8_t pin;
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip;
-    RgbColor color;
+    CRGB* leds = new CRGB[NUMLEDS];
+    CRGB color;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;
