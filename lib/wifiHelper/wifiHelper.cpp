@@ -27,7 +27,7 @@ void powerOff() {
 bool wifiConnect(bool showLeds)
 {
   Serial.println("wifi connect");
-  CRGB c = strp->getColor();
+  uint32_t c = strp->getColor();
   bool res = true;
   if (showLeds)
   {
@@ -80,7 +80,7 @@ bool wifiConnect(bool showLeds)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
     delay(2000);
-    strp->setColor((uint32_t)c, true);
+    strp->setColor(c, true);
   }
   return res;
 }

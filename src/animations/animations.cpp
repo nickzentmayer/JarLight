@@ -207,16 +207,16 @@ void multiSparkle(void* s) {
       switch (i % 4)
       {
       case 0:
-        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 1:
-        helper->setPixelColorHsv(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 2:
-        helper->setPixelColorHsv(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 3:
-        helper->setPixelColorHsv(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
       
       default:
@@ -250,10 +250,10 @@ void chSparkle(void* s) {
       switch (i % 2)
       {
       case 0:
-        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 75));
+        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 1:
-        helper->setPixelColorHsv(i, 0.333*255, sat[i], (float)map(sat[i], 0, 255, 255, 75));
+        helper->setPixelColorHsv(i, 0.333*255, sat[i], (float)map(sat[i], 0, 255, 255, 125));
         break;
       
       default:
