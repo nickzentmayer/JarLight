@@ -1,5 +1,5 @@
 #pragma once
-#include <NeoPixelBrightnessBus.h>
+#include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include "config.h"
 
@@ -50,14 +50,14 @@ class AnimationHelper {
     String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
-    void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
+    Adafruit_NeoPixel* getStrip();
+    void setStrip(Adafruit_NeoPixel* s);
 
     private:
-    void fill(RgbColor c);
+    void fill(uint32_t c);
     uint8_t pin;
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip;
-    RgbColor color;
+    Adafruit_NeoPixel* strip;
+    uint32_t color;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;

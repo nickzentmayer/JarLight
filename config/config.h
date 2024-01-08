@@ -1,11 +1,11 @@
 //config file, using seeed studio xiao esp32c3 
-#define DEVICE_NAME "Christmas Lights" //Caps and spaces allowed, dont uses symbols
+#define DEVICE_NAME "Jar Light" //Caps and spaces allowed, dont uses symbols
 
 //enable serial monitor (disable for production, espeacially esp's with USB (S3, C3, S2, etc.))
 #define DEBUG
 
-#define SSID "Barnegat"
-#define PSWD "Mustang1967"
+#define SSID "Verizon_6NSP4Q"
+#define PSWD "splash9-fax-con"
 #define USE_SOFT_AP true //use soft AP in case of no WiFi
 //#define SOFTAP_SSID "Jar Light" //overwrite SSID, will default to device name if not defined
 #define SOFTAP_PSWD "deeznutz"
@@ -25,10 +25,10 @@
 #define DDNS_SERVICE "duckdns"
 #endif
 //led config
-#define NUMLEDS 150
-#define DATAPIN 13
-#define PIXELTYPE NeoRgbFeature
-#define PIXELSPEED Neo800KbpsMethod
+#define NUMLEDS 68
+#define DATAPIN D10
+#define PIXELTYPE NEO_GRB
+#define PIXELSPEED NEO_KHZ800
 //mpu config
 //#define USEMPU //comment out if not connected to mpu6500
 #define MPUINT D3
