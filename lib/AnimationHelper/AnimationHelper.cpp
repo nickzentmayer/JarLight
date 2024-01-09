@@ -6,6 +6,7 @@ AnimationHelper::AnimationHelper(int n, uint8_t p) {
 }
 void AnimationHelper::begin() {
     strip = new NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>(NLEDS, pin);
+    strip->Begin();
     strip->SetBrightness(brightness);
     strip->Show();
     setColor(100, 100, 100);
