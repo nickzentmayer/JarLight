@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
-#include <animationHelper.h>
+#include <FastLED.h>
+#include <AnimationHelper.h>
 #ifndef ANIM
 #define ANIM
     struct Animation {
@@ -11,18 +11,25 @@
     void cylon(void* s);
     void cycle(void* s);
     //void fireworks();
-    void fadeall(Adafruit_NeoPixel* strip, uint8_t dec);
+    void fadeall(AnimationHelper* helper, uint8_t dec);
     void halloween(void* s);
     void fall(void* s);
     void setSemaphore(SemaphoreHandle_t* xSem);
     void christmas(void* s);
     void twinkle(void* s);
-    
+    uint32_t NewFunction(AnimationHelper *helper);
+    void candyCane(void *s);
+    void multiSparkle(void *s);
+    void chSparkle(void *s);
+
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
                               {cycle, "Cycle"},
-                              {halloween, "Halloween"}, 
-                              {fall, "Fall"},
+                              //{halloween, "Halloween"}, 
+                              //{fall, "Fall"},
                               {christmas, "Christmas"},
-                              {twinkle, "Twinkle"}};
+                              {twinkle, "Twinkle"},
+                              {candyCane, "Candy Cane"},
+                              {multiSparkle, "Multicolor Sparkle"},
+                              {chSparkle, "Christmas Sparkle"}};
     #endif

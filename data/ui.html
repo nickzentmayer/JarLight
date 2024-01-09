@@ -24,7 +24,11 @@
         </div>
         <div class="slidecontainer">
           <h3>Brightness:</h3>
-          <input type="range" min="5" max="255" value="100" id="bright" oninput="sendMsg('b:'+this.value.toString())">
+          <input type="range" min="5" max="255" value="100" id="bright" class="slide" oninput="sendMsg('b:'+this.value.toString())">
+        </div>
+        <div class="slidecontainer">
+          <h3>Animation Speed:</h3>
+          <input type="range" min="0" max="245" value="100" id="speed" class="slide" oninput="sendMsg('s:'+this.value.toString())">
         </div>
         <div id="static">
             <h3 for="colorpicker">Color Picker:</h3>
@@ -34,11 +38,22 @@
             <h3>Animations</h3>
         </div>
         <br>
+        <div id="timer">
+          <h3>Timer</h3>
+          <p>On at: </p>
+          <input type="time" id="onTime" class="time" name="onTime">
+          <br>
+          <p>Off at: </p>
+          <input type="time" id="offTime" class="time" name="offTime">
+          <br>
+          <br>
+          <button id="saveTimer" onclick="sendTimer()">Save Timer</button>
+        </div>
         <input type="button" value="Reconnect to Network" class="animButtons" id="recon" onclick="sendMsg('w:recon')">
         <br>
         <div id="sleep">
           <h3>Sleep</h3>
-        <input type="button" value="Enter Sleep Mode" class="animButtons" id="slp" onclick="sendMsg('s:Sleep')">
+        <input type="button" value="Enter Sleep Mode" class="animButtons" id="slp" onclick="sendMsg('sleep:Sleep')">
         </div>
       </div>
     </body>

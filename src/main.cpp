@@ -12,11 +12,13 @@
 #include <mpu6500.h>
 MPU mpu(MPUADDR);
 #endif
-AnimationHelper strip(NUMLEDS, DATAPIN, NEOTYPE);
+AnimationHelper strip(NUMLEDS, DATAPIN);
 
 
 void setup() {
-  //Serial.begin(115200);
+  #ifdef DEBUG
+  Serial.begin(115200);
+  #endif
   // init leds
   delay(1000);
   strip.begin();
@@ -36,7 +38,7 @@ void setup() {
   }
   else strip.setColor(0, 255, 0, true);
   delay(1000);
-  strip.setColor(100, 100, 100, true);
+  strip.setAnimation(5);
   #ifdef USEMPU
   mpu.setupInt();
   pinMode(MPUINT, INPUT);

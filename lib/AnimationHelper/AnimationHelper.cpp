@@ -1,13 +1,11 @@
 #include "AnimationHelper.h"
 
-AnimationHelper::AnimationHelper(int n, uint8_t p, int t) {
+AnimationHelper::AnimationHelper(int n, uint8_t p) {
     NLEDS = n;
     pin = p;
-    type = t;
 }
 void AnimationHelper::begin() {
-    strip = new Adafruit_NeoPixel(NLEDS, pin, type);
-    strip->begin();
+    strip = new Adafruit_NeoPixel(NLEDS, pin, PIXELTYPE + PIXELSPEED);
     strip->setBrightness(brightness);
     strip->show();
     setColor(100, 100, 100);
@@ -16,7 +14,7 @@ void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
     color = strip->Color(r, g, b);
     if(sho) showColor();
 }
-void AnimationHelper::setColorHsv(uint16_t h, uint8_t s, uint8_t v, bool sho) {
+void AnimationHelper::setColorHsv(uint8_t h, uint8_t s, uint8_t v, bool sho) {
     color = strip->ColorHSV(h, s, v);
     if(sho) showColor();
 }
@@ -27,7 +25,7 @@ void AnimationHelper::setColor(uint32_t c, bool sho) {
 void AnimationHelper::showColor() 
 {
 if(animation != -1)setAnimation(-1);
-strip->fill(color);
+fill(color);
 if(!power) return;
 strip->show();
 }
@@ -65,6 +63,17 @@ void AnimationHelper::setAnimation(int a) {
             Serial.println("delete");
         }
         if(animation != -1) {
+            #ifdef ESP32DEV
+            xTaskCreatePinnedToCore(
+                animations[animation],
+                "Animation Task",
+                2048,
+                this,
+                2,
+                NULL,
+                1);
+            #endif
+            #ifdef ESP32C3
             xTaskCreate(
                 animations[animation],
                 "Animation Task",
@@ -72,6 +81,7 @@ void AnimationHelper::setAnimation(int a) {
                 this,
                 2,
                 NULL);
+            #endif
         }
     setPower(power);
 }
@@ -79,6 +89,9 @@ void AnimationHelper::setBrightness(byte b) {
     brightness = b;
     strip->setBrightness(brightness);
     if(animation == -1 && power) showColor();
+}
+void AnimationHelper::setSpeed(byte s) {
+    speed = (float)s / 255.0;
 }
 void AnimationHelper::setPower(bool p) {
     power = p;
@@ -103,12 +116,42 @@ void AnimationHelper::setPower(bool p) {
                 xSemaphoreGive(xSemaphore);
             }
         }
-        strip->fill(0);
+        fill(0);
         strip->show();
     }
 }
+void AnimationHelper::powerOn() {
+    setPower(true);
+}
+void AnimationHelper::powerOff() {
+    setPower(false);
+}
 void AnimationHelper::setAnimationSemaphore(semaPtr s) {
     s(&xSemaphore);
+}
+
+void AnimationHelper::setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool sho) {
+    strip->setPixelColor(p, strip->Color(r, g, b));
+    if(sho) show();
+}
+void AnimationHelper::setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho) {
+    strip->setPixelColor(p, strip->ColorHSV((float)h/255.0, (float)s/255.0, (float)v/255.0));
+    if(sho) show();
+}
+void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
+    strip->setPixelColor(p, c);
+    if(sho) show();
+}
+void AnimationHelper::show() {
+    strip->show();
+}
+uint32_t AnimationHelper::getPixelColor(int p) {
+    return strip->getPixelColor(p);
+}
+
+void AnimationHelper::fill(uint32_t c) {
+    for(int i=0; i<NUMLEDS; i++) 
+        strip->setPixelColor(i, c);
 }
 
 bool AnimationHelper::getPower() {
@@ -117,8 +160,14 @@ bool AnimationHelper::getPower() {
 byte AnimationHelper::getBrightness() {
     return brightness;
 }
+float AnimationHelper::getSpeed() {
+    return speed;
+}
 int AnimationHelper::getAnimation() {
     return animation;
+}
+int AnimationHelper::pixelCount() {
+    return NUMLEDS;
 }
 String** AnimationHelper::getAnimationNames() {
     return animNames;
@@ -133,5 +182,5 @@ Adafruit_NeoPixel* AnimationHelper::getStrip() {
     return strip;
 }
 void AnimationHelper::setStrip(Adafruit_NeoPixel* s) {
-    strip = s;
+    strip = s;   
 }

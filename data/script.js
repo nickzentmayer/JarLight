@@ -28,9 +28,11 @@ function onMessage(event) {
     var topic = event.data.toString().substring(0, event.data.toString().indexOf(':'));
     var value = event.data.toString().substring(event.data.toString().indexOf(':') + 1);
     console.log(topic + value)
-    if (topic == 'p') document.getElementById('powerSwitch').checked = (value == "1");
+    if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
+    else document.getElementById('powerSwitch').checked = false;
     if (topic == 'c') document.getElementById('colorpicker').value = value;
     if (topic == 'b') document.getElementById('bright').value = value;
+    if (topic == 's') document.getElementById('speed').value = value;
     if (topic == 'batt') document.getElementById('batP').innerHTML = value + "%";
     if (topic == 'w') {
         if(value == 'AP') document.getElementById('recon').style.display = "inline";
@@ -55,6 +57,13 @@ function onMessage(event) {
             document.getElementById('sleep').style.display = "none";
         }
     }
+    if(topic == 't') {
+        document.getElementById("onTime").value = value.substring(0, 5);
+        document.getElementById("offTime").value = value.substring(6);
+    }
+    if(topic == 'print') {
+        console.log(value);
+    }
 }
 window.addEventListener('load', onLoad);
 
@@ -68,7 +77,23 @@ function onLoad(event) {
     animButtons = document.getElementById("animations");
 }
 
-
+function sendTimer() {
+    if(document.getElementById("onTime").value != "" && document.getElementById("offTime").value != "") {
+    console.log(document.getElementById("onTime").value);
+    console.log(document.getElementById("offTime").value);
+    sendMsg('t:on:'+document.getElementById("onTime").value.toString());
+    sendMsg('t:off:'+document.getElementById("offTime").value.toString());
+    }
+    else {
+        if(document.getElementById("onTime").value == "") invalidFlash("onTime");
+        if(document.getElementById("offTime").value == "") invalidFlash("offTime");
+    }
+}
+async function invalidFlash(id) {
+    let elem = document.getElementById(id);
+    elem.style.color = 'red';
+    setTimeout(() => { elem.style.color = 'white' }, 1000);
+}
 
 
 /*<input type="button" value="Cylon" class="animButtons" onclick="sendMsg('a:cylon')">

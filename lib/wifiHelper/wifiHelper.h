@@ -5,6 +5,8 @@
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
+#include "Timer.h"
+#include <time.h>
 #ifdef USEUPNP
 #include <TinyUPnP.h>
 #endif
@@ -15,6 +17,7 @@
 bool wifiSetup(AnimationHelper* s);
 
 void handleIndex(AsyncWebServerRequest *req);
+void handleManifest(AsyncWebServerRequest *req);
 void sendFile(AsyncWebServerRequest *req);
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
              void *arg, uint8_t *data, size_t len);
