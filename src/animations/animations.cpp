@@ -12,7 +12,6 @@ void cycle(void* s)  {
   AnimationHelper* helper = static_cast<AnimationHelper *>(s);
     float fph;
     //strip->setPin(strip->getPin());
-    Serial.println("start cycle");
     for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     float hue = fph;
@@ -153,7 +152,7 @@ void twinkle(void* s) {
   for(;;) {
     xSemaphoreTake(*xSemaphore, portMAX_DELAY);
     for(int i = 0; i < 3; i++) {
-      switch (random(3))
+      switch (random(15))
       {
         case 0:
           helper->setPixelColor(random(helper->pixelCount()-1), helper->getColor());
