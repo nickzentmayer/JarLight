@@ -386,7 +386,7 @@ void sendBattery()
   #endif
 }
 #endif
-/*void updateClients() {
+void updateClients() {
   byte r = strp->getColor() >> 16;
   byte g = strp->getColor() >> 8;
   byte b = strp->getColor();
@@ -408,7 +408,7 @@ void sendBattery()
   wws.textAll("c:#" + index);
   wws.textAll("b:" + String(strp->getBrightness()));
   #endif
-}*/
+}
 void handleWiFi()
 {
 #ifdef BATTPIN

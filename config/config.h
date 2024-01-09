@@ -30,7 +30,7 @@
 #define PIXELTYPE NEO_GRB
 #define PIXELSPEED NEO_KHZ800
 //mpu config
-//#define USEMPU //comment out if not connected to mpu6500
+#define USEMPU //comment out if not connected to mpu6500
 #define MPUINT D3
 #define MPUADDR 0x68
 #define MPUTHRESHOLD 125
