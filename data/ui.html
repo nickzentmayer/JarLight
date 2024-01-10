@@ -18,8 +18,8 @@
         <div id="power">
           <h3>Power</h3>
             <label class="switch">
-            <input type="checkbox" id="powerSwitch" onclick="sendMsg('p:'+this.checked.toString())">
-            <span class="slider round" id="powerSwitch"></span>
+            <input type="checkbox" class="sliderSwitch" id="powerSwitch" onclick="sendMsg('p:'+this.checked.toString())">
+            <span class="sliderSwitch round" id="powerSwitch"></span>
             </label>
         </div>
         <div class="slidecontainer">
@@ -40,6 +40,10 @@
         <br>
         <div id="timer">
           <h3>Timer</h3>
+          <label class="switch">
+            <input type="checkbox" id="timerSwitch" class="sliderSwitch" onclick="sendMsg('t:toggle:'+this.checked.toString())">
+            <span class="sliderSwitch round" id="timerSwitch"></span>
+          </label>
           <p>On at: </p>
           <input type="time" id="onTime" class="time" name="onTime">
           <br>

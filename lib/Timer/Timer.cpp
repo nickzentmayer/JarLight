@@ -38,6 +38,7 @@ Timer::Timer(tm t, TimerCallback callBack) {
 }
 
 boolean Timer::begin() {
+    if(task != NULL) return false;
         configTime(3600*TIMEZONE, 0, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
         if(getLocalTime(&curTime, 5000)) {
             if(isDST(curTime.tm_year, curTime.tm_mon, curTime.tm_mday, curTime.tm_hour, TIMEZONE)) 

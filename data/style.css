@@ -1,6 +1,6 @@
 html {
                 display: block;
-                margin: 50px;
+                margin: 5%;
                 text-align: center;
                 padding: 0;
             }
@@ -45,7 +45,7 @@ html {
             }
 
             /* The slider */
-            .slider {
+            .sliderSwitch {
                 position: absolute;
                 cursor: pointer;
                 top: 0;
@@ -57,7 +57,7 @@ html {
                 transition: .4s;
             }
 
-            #powerSwitch:before {
+            .sliderSwitch:before {
                 position: absolute;
                 content: "";
                 height: 26px;
@@ -69,25 +69,25 @@ html {
                 transition: .4s;
             }
 
-            input:checked+#powerSwitch {
+            input:checked+.sliderSwitch {
                 background-color: #ff2b2b;
             }
 
-            input:focus+#powerSwitch {
+            input:focus+.sliderSwitch {
                 box-shadow: 0 0 1px #ff2b2b;
             }
 
-            input:checked+#powerSwitch:before {
+            input:checked+.sliderSwitch:before {
                 -webkit-transform: translateX(26px);
                 -ms-transform: translateX(26px);
                 transform: translateX(26px);
             }
 
-            #powerSwitch.round {
+            .sliderSwitch.round {
                 border-radius: 34px;
             }
 
-            #powerSwitch.round:before {
+            .sliderSwitch.round:before {
                 border-radius: 50%;
             }
 
@@ -201,7 +201,7 @@ html {
                 color:#ffffff;
                 width: 100px;
                 height: 40px;
-                transform: translateX(-5px);
+                /*transform: translateX(-5px);*/
                 display: inline-block;
                 border-color: white;
                 border-radius: 5px;
@@ -213,6 +213,9 @@ html {
                 border-color: #ff0000;
                 border-radius: 25px;
                 width: 25%;
-                height: 30px;
+                height: 35px;
                 font-size: medium;
+            }
+            #timer {
+                width: 100%;
             }

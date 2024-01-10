@@ -25,8 +25,11 @@ function onClose(event) {
 }
 function onMessage(event) {
     console.log(event.data);
-    var topic = event.data.toString().substring(0, event.data.toString().indexOf(':'));
-    var value = event.data.toString().substring(event.data.toString().indexOf(':') + 1);
+    updatePage(event.data);
+}
+function updatePage(data) {
+    var topic = data.toString().substring(0, data.toString().indexOf(':'));
+    var value = data.toString().substring(data.toString().indexOf(':') + 1);
     console.log(topic + value)
     if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
     else document.getElementById('powerSwitch').checked = false;
@@ -58,8 +61,10 @@ function onMessage(event) {
         }
     }
     if(topic == 't') {
-        document.getElementById("onTime").value = value.substring(0, 5);
-        document.getElementById("offTime").value = value.substring(6);
+        let timer = value.substring(0, value.indexOf(':'));
+        value = value.substring(value.indexOf(':') + 1);
+        if(timer == 'on') document.getElementById("onTime").value = value;
+        if(timer == 'off')document.getElementById("offTime").value = value;
     }
     if(topic == 'print') {
         console.log(value);
