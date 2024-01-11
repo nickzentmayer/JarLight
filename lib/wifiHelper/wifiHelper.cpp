@@ -9,6 +9,7 @@ AsyncWebSocket wws("/ws");
 AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
+bool timers = false;
 
 Timer* timerOn = nullptr;
 Timer* timerOff = nullptr;
@@ -149,10 +150,12 @@ bool wifiSetup(AnimationHelper *s)
   if(timeOn.tm_hour != 69) {
     timerOn = new Timer(timeOn, powerOn);
     timerOn->begin();
+    timers = true;
   }
   if(timeOff.tm_hour != 69) {
     timerOff = new Timer(timeOff, powerOff);
     timerOff->begin();
+    timers = true;
   }
 
   return res;
@@ -264,8 +267,20 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       msg = msg.substring(msg.indexOf(':') + 1);
       String type = msg.substring(0, msg.indexOf(":"));
       msg = msg.substring(msg.indexOf(':') + 1);
-      if(type.equals("on")) saveTimer(SPIFFS, "on", msg.substring(0, msg.indexOf(':')).toInt(), msg.substring(msg.indexOf(':')+1).toInt());
-      else if(type.equals("off")) saveTimer(SPIFFS, "off", msg.substring(0, msg.indexOf(':')).toInt(), msg.substring(msg.indexOf(':')+1).toInt());
+      if(type.equals("on")) {
+        tm time;
+        time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
+        time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
+        timerOn = new Timer(time, powerOn);
+        saveTimer(SPIFFS, "on", time);
+      }
+      else if(type.equals("off")) {
+        tm time;
+        time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
+        time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
+        timerOff = new Timer(time, powerOff);
+        saveTimer(SPIFFS, "off", msg.substring(0, msg.indexOf(':')).toInt(), msg.substring(msg.indexOf(':')+1).toInt());
+      }
       else if(type.equals("toggle")) {
         if(timerOn != nullptr && timerOff != nullptr) {
           if(msg.equals("true")) {
@@ -329,23 +344,24 @@ void updateData(AsyncWebSocket* server)
   if(SPIFFS.exists("/on.tmr")) {
     tm time = getTimer(SPIFFS, "on");
     String temp = "t:on:";
-    if(time.tm_hour < 10) temp = "0";
+    if(time.tm_hour < 10) temp += "0";
     temp += time.tm_hour;
     temp += ':';
-    if(time.tm_min < 10) temp = "0";
+    if(time.tm_min < 10) temp += "0";
     temp += time.tm_min;
     server->textAll(temp);
   }
   if(SPIFFS.exists("/off.tmr")) {
-    tm time = getTimer(SPIFFS, "on");
+    tm time = getTimer(SPIFFS, "off");
     String temp = "t:off:";
-    if(time.tm_hour < 10) temp = "0";
+    if(time.tm_hour < 10) temp += "0";
     temp += time.tm_hour;
     temp += ':';
-    if(time.tm_min < 10) temp = "0";
+    if(time.tm_min < 10) temp += "0";
     temp += time.tm_min;
     server->textAll(temp);
   }
+  server->textAll("t:toggle:" + String(timers));
 }
 #ifdef BATTPIN
 void sendBattery()

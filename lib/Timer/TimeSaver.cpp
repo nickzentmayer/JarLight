@@ -5,8 +5,8 @@ bool saveTimer(FS fs, String name, uint8_t hr, uint8_t min) {
     String path = "/" + name + ".tmr";
     if(fs.exists(path)) if(!fs.remove(path)) return false;
     tmr = fs.open(path, FILE_WRITE);
-    tmr.printf("%u:%u", hr, min);
-    Serial.printf("%u:%u", hr, min);
+    tmr.printf("%.2u:%.2u", hr, min);
+    Serial.printf("%.2u:%.2u", hr, min);
     tmr.close();
     return true;
 }
@@ -16,7 +16,7 @@ bool saveTimer(FS fs, String name, tm time) {
     String path = "/" + name + ".tmr";
     if(fs.exists(path)) if(!fs.remove(path)) return false;
     tmr = fs.open(path, FILE_WRITE);
-    if (tmr.availableForWrite()) tmr.printf("%d:%d", time.tm_hour, time.tm_min);
+    if (tmr.availableForWrite()) tmr.printf("%.2d:%.2d", time.tm_hour, time.tm_min);
     else return false;
     tmr.close();
     return true;

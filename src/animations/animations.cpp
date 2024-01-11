@@ -25,7 +25,7 @@ void cycle(void* s)  {
     if(fph >= 1.0) fph = 0;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(1);
+    vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
     }
 }
 
@@ -58,7 +58,7 @@ void cylon(void* s) {
   for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     // Set the i'th led to red 
-    if(dir) helper->setPixelColorHsv(pos--/2, hue++, 1, 1);
+    if(dir) helper->setPixelColorHsv(pos--/2, hue++, 255, 255);
     else helper->setPixelColorHsv(pos++/2, hue++, 255, 255);
     // Show the leds
     hue += 1/helper->pixelCount();

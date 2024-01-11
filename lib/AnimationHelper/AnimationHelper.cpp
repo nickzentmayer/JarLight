@@ -136,7 +136,7 @@ void AnimationHelper::setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool
     if(sho) show();
 }
 void AnimationHelper::setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho) {
-    strip->SetPixelColor(p, HslColor((float)h/255.0, (float)s/255.0, (float)v/255.0));
+    strip->SetPixelColor(p, HsbColor((float)h/255.0, (float)s/255.0, (float)v/255.0));
     if(sho) show();
 }
 void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
