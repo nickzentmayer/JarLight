@@ -70,7 +70,7 @@ void cylon(void* s) {
     if(pos/2 >= helper->pixelCount() - 1 || pos < 0) dir = !dir;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(1);
+    vTaskDelay(abs(10 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -87,7 +87,7 @@ void halloween(void* s) {
   fadeall(helper, 10);
   helper->show();
   xSemaphoreGive(*xSemaphore);
-  vTaskDelay(50);
+  vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -115,7 +115,7 @@ void fall(void* s) {
     fadeall(helper, 7);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -143,7 +143,7 @@ void christmas(void* s) {
     fadeall(helper, 5);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -165,7 +165,7 @@ void twinkle(void* s) {
     fadeall(helper, 5);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 

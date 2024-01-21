@@ -1,0 +1,21 @@
+<div id="timer">
+    <h3>Timer</h3>
+    <label class="switch">
+      <input type="checkbox" id="timerSwitch" class="sliderSwitch" onclick="sendMsg('t:toggle:'+this.checked.toString())">
+      <span class="sliderSwitch round" id="timerSwitch"></span>
+    </label>
+    <p>On at: </p>
+    <input type="time" id="onTime" class="time" name="onTime">
+    <br>
+    <p>Off at: </p>
+    <input type="time" id="offTime" class="time" name="offTime">
+    <br>
+    <br>
+    <button id="saveTimer" onclick="sendTimer()">Save Timer</button>
+  </div>
+  <input type="button" value="Reconnect to Network" class="animButtons" id="recon" onclick="sendMsg('w:recon')">
+  <br>
+  <div id="sleep">
+    <h3>Sleep</h3>
+  <input type="button" value="Enter Sleep Mode" class="animButtons" id="slp" onclick="sendMsg('sleep:Sleep')">
+  </div>

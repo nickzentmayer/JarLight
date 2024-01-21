@@ -223,6 +223,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       for (int i = 0; i < strp->getNumberAnimations(); i++)
         server->text(id, "a:" + *(strp->getAnimationNames()[i]));
     }
+    if(msg.equals("update")) {
+      updateClients();
+    }
     if (msg.startsWith("p:"))
     {
       // power = msg.substring(msg.indexOf(":")+1).equals("true");
@@ -286,10 +289,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
           if(msg.equals("true")) {
             timerOn->begin();
             timerOff->begin();
+            timers = true;
           }
           else {
             timerOn->end();
             timerOff->end();
+            timers = false;
           }
         }
       }
@@ -300,11 +305,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       strp->setColor(0, true);
       WiFi.mode(WIFI_OFF); //idk if this will make esp draw less current in sleep but cant hurt
       #ifdef ESP32C3
-      esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      esp_deep_sleep_enable_gpio_wakeup((1ULL << MPUINT), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      #endif
+      #ifdef ESP32S2
+      esp_sleep_enable_ext0_wakeup(MPUINT, 1);
       #endif
       #ifdef ESP32DEV
       esp_sleep_enable_ext0_wakeup(MPUINT, 1);
       #endif
+      delay(50); //let pixels turn off
       esp_deep_sleep_start();
     }
     #endif
@@ -318,13 +327,13 @@ void updateData(AsyncWebSocket* server)
   byte b = strp->getColor();
   server->textAll("p:" + String(strp->getPower()));
   String index;
-  if (r < 10)
+  if (r < 16)
     index += "0";
   index += String(r, HEX);
-  if (g < 10)
+  if (g < 16)
     index += "0";
   index += String(g, HEX);
-  if (b < 10)
+  if (b < 16)
     index += "0";
   index += String(b, HEX);
   server->textAll("c:#" + index);
@@ -350,6 +359,7 @@ void updateData(AsyncWebSocket* server)
     if(time.tm_min < 10) temp += "0";
     temp += time.tm_min;
     server->textAll(temp);
+    server->textAll("print:" + SPIFFS.open("/on.tmr").readString());
   }
   if(SPIFFS.exists("/off.tmr")) {
     tm time = getTimer(SPIFFS, "off");

@@ -16,8 +16,7 @@ bool saveTimer(FS fs, String name, tm time) {
     String path = "/" + name + ".tmr";
     if(fs.exists(path)) if(!fs.remove(path)) return false;
     tmr = fs.open(path, FILE_WRITE);
-    if (tmr.availableForWrite()) tmr.printf("%.2d:%.2d", time.tm_hour, time.tm_min);
-    else return false;
+    tmr.printf("%.2d:%.2d", time.tm_hour, time.tm_min);
     tmr.close();
     return true;
 }

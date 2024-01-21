@@ -8,7 +8,7 @@ html {
             body {
                 background-color: rgb(17, 17, 17);
                 font-family: Arial, Helvetica, sans-serif;
-                margin: 0%;
+                margin-bottom: 90px;
                 scroll-behavior: auto;
                 display: block;
                 align-content: center;
@@ -121,6 +121,8 @@ html {
 
             #recon {
                 display: none;
+                margin-top: 50px;
+                margin-bottom: 50px;
             }
 
             #colorpicker {
@@ -195,6 +197,8 @@ html {
             }
             #sleep{
                 display: none;
+                margin-top: 50px;
+                margin-bottom: 50px;
             }
             .time {
                 background-color:rgb(8, 8, 8);
@@ -219,3 +223,43 @@ html {
             #timer {
                 width: 100%;
             }
+
+            #nav {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                /*height: 75px;*/
+                padding: 0;
+                margin: 0;
+                /*float: left;*/
+                left: 0;
+                align-items: center;
+                text-align: center;
+                justify-content: center;
+              }
+              .navBar{
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: #333;
+                position: relative;
+                display: block;
+                text-align: center;
+              }
+              .navLink {
+                display: inline;
+              }
+              .navButton {
+                display: inline;
+                padding: 8px;
+                border-style: solid;
+                border-color: white;
+                border-width: 3px;
+                border-radius: 5px;
+                height: 80px;
+                width: 80px;
+                margin: 0px;
+                color: white;
+                background-color: #333;
+              }

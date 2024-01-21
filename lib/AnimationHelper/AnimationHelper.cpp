@@ -83,6 +83,15 @@ void AnimationHelper::setAnimation(int a) {
                 2,
                 NULL);
             #endif
+            #ifdef ESP32S2
+            xTaskCreate(
+                animations[animation],
+                "Animation Task",
+                2048,
+                this,
+                2,
+                NULL);
+            #endif
         }
     setPower(power);
 }
@@ -140,7 +149,7 @@ void AnimationHelper::setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, b
     if(sho) show();
 }
 void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
-    strip->SetPixelColor(p, RgbColor(c));
+    strip->SetPixelColor(p, HtmlColor(c));
     if(sho) show();
 }
 void AnimationHelper::show() {
@@ -177,7 +186,7 @@ int AnimationHelper::getNumberAnimations() {
     return numAnims;
 }
 uint32_t AnimationHelper::getColor() {
-    return (color.R << 16 + color.G << 8 + color.B);
+    return HtmlColor(color).Color;
 }
 NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
     return strip;
