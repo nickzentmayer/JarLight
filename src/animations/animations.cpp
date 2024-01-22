@@ -25,7 +25,7 @@ void cycle(void* s)  {
     if(fph >= 1.0) fph = 0;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(1);
+    vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
     }
 }
 
@@ -58,7 +58,7 @@ void cylon(void* s) {
   for(;;) {
     xSemaphoreTake( *xSemaphore, portMAX_DELAY);
     // Set the i'th led to red 
-    if(dir) helper->setPixelColorHsv(pos--/2, hue++, 1, 1);
+    if(dir) helper->setPixelColorHsv(pos--/2, hue++, 255, 255);
     else helper->setPixelColorHsv(pos++/2, hue++, 255, 255);
     // Show the leds
     hue += 1/helper->pixelCount();
@@ -70,7 +70,7 @@ void cylon(void* s) {
     if(pos/2 >= helper->pixelCount() - 1 || pos < 0) dir = !dir;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(1);
+    vTaskDelay(abs(10 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -87,7 +87,7 @@ void halloween(void* s) {
   fadeall(helper, 10);
   helper->show();
   xSemaphoreGive(*xSemaphore);
-  vTaskDelay(50);
+  vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -115,7 +115,7 @@ void fall(void* s) {
     fadeall(helper, 7);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -143,7 +143,7 @@ void christmas(void* s) {
     fadeall(helper, 5);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -165,7 +165,7 @@ void twinkle(void* s) {
     fadeall(helper, 5);
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(25);
+    vTaskDelay(abs(50 * (1.0 - helper->getSpeed())));
   }
 }
 
@@ -207,16 +207,16 @@ void multiSparkle(void* s) {
       switch (i % 4)
       {
       case 0:
-        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 1:
-        helper->setPixelColorHsv(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.135 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 2:
-        helper->setPixelColorHsv(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.33 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 3:
-        helper->setPixelColorHsv(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 65));
+        helper->setPixelColorHsv(i, 0.67 * 255, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
       
       default:
@@ -250,10 +250,10 @@ void chSparkle(void* s) {
       switch (i % 2)
       {
       case 0:
-        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 75));
+        helper->setPixelColorHsv(i, 0, sat[i], map(sat[i], 0, 255, 255, 125));
         break;
         case 1:
-        helper->setPixelColorHsv(i, 0.333*255, sat[i], (float)map(sat[i], 0, 255, 255, 75));
+        helper->setPixelColorHsv(i, 0.333*255, sat[i], (float)map(sat[i], 0, 255, 255, 125));
         break;
       
       default:

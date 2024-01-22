@@ -13,10 +13,12 @@ function initWebSocket() {
 function onOpen(event) {
     console.log('Connection opened');
     //sendMsg('upd');
+    if(animButtons != null) {
     let len = animButtons.getElementsByClassName("animButtons").length
     for(let i = 0; i < len; i++) animButtons.getElementsByClassName("animButtons")[0].remove();
     animCount = 0;
     sendMsg('getAnimations');
+    }
 }
 
 function onClose(event) {
@@ -25,8 +27,11 @@ function onClose(event) {
 }
 function onMessage(event) {
     console.log(event.data);
-    var topic = event.data.toString().substring(0, event.data.toString().indexOf(':'));
-    var value = event.data.toString().substring(event.data.toString().indexOf(':') + 1);
+    updatePage(event.data);
+}
+function updatePage(data) {
+    var topic = data.toString().substring(0, data.toString().indexOf(':'));
+    var value = data.toString().substring(data.toString().indexOf(':') + 1);
     console.log(topic + value)
     if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
     else document.getElementById('powerSwitch').checked = false;
@@ -39,7 +44,7 @@ function onMessage(event) {
         if(value == 'STA') document.getElementById('recon').style.display = "none";
     }
     if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
-    if(topic == 'a') {
+    if(topic == 'a' && animButtons != null) {
         var b = document.createElement("button");
         b.value = (animCount++).toString();
         b.className = "animButtons";
@@ -49,17 +54,24 @@ function onMessage(event) {
     }
     if(topic == 'type') {
         if(value == 'battery') {
-            document.getElementById('battery').style.display = "inline";
-            document.getElementById('sleep').style.display = "inline";
+            try {document.getElementById('battery').style.display = "inline";}
+            catch{console.log("no batt div found")}
+            try{document.getElementById('sleep').style.display = "inline";}
+            catch {}
         }
         if(value == 'wall') {
-            document.getElementById('battery').style.display = "none"; 
-            document.getElementById('sleep').style.display = "none";
+            try{document.getElementById('battery').style.display = "none"; }
+            catch{}
+            try{document.getElementById('sleep').style.display = "none";}
+            catch{}
         }
     }
     if(topic == 't') {
-        document.getElementById("onTime").value = value.substring(0, 5);
-        document.getElementById("offTime").value = value.substring(6);
+        let timer = value.substring(0, value.indexOf(':'));
+        value = value.substring(value.indexOf(':') + 1);
+        if(timer == 'on') document.getElementById("onTime").value = value;
+        if(timer == 'off')document.getElementById("offTime").value = value;
+        if(timer == 'toggle') document.getElementById("timerSwitch").checked = (value == "1");
     }
     if(topic == 'print') {
         console.log(value);
@@ -74,7 +86,7 @@ function sendMsg(msg) {
 function onLoad(event) {
     initWebSocket();
     //document.getElementById('animButtons').onpointerover = changeColor();
-    animButtons = document.getElementById("animations");
+    //animButtons = document.getElementById("animations");
 }
 
 function sendTimer() {
@@ -95,7 +107,20 @@ async function invalidFlash(id) {
     setTimeout(() => { elem.style.color = 'white' }, 1000);
 }
 
-
+async function switchPage(page, button) {
+    let navs = document.getElementsByClassName("navButton");
+    for(var i = 0; i < navs.length; i++) {
+        navs[i].style.cssText = "background-color: #333;";
+    }
+    button.style.cssText = "background-color: red;"
+    let p = document.getElementById("page");
+    let response = await fetch("/"+page+".html");
+    p.innerHTML = await response.text();
+    animButtons = document.getElementById("animations");
+    sendMsg("update");
+    animCount = 0;
+    sendMsg('getAnimations');
+}
 /*<input type="button" value="Cylon" class="animButtons" onclick="sendMsg('a:cylon')">
             <input type="button" value="Cycle" class="animButtons" onclick="sendMsg('a:cycle')">
             <input type="button" value="Fall" class="animButtons" onclick="sendMsg('a:fall')">

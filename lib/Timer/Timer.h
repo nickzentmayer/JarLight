@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <time.h>
 #include "config.h"
+#include <TimeSaver.h>
 
 #ifndef TIMER_H
 #define TIMER_H

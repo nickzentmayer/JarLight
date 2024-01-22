@@ -1,5 +1,5 @@
 #pragma once
-#include <FastLED.h>
+#include <NeoPixelBrightnessBus.h>
 #include <Arduino.h>
 #include "config.h"
 
@@ -50,14 +50,14 @@ class AnimationHelper {
     String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();
-    CRGB* getStrip();
-    void setStrip(CRGB* s);
+    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
+    void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
 
     private:
-    void fill(CRGB c);
+    void fill(RgbColor c);
     uint8_t pin;
-    CRGB* leds = new CRGB[NUMLEDS];
-    CRGB color;
+    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip;
+    RgbColor color;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;

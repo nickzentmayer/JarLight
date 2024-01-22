@@ -9,6 +9,7 @@ AsyncWebSocket wws("/ws");
 AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
+bool timers = false;
 
 Timer* timerOn = nullptr;
 Timer* timerOff = nullptr;
@@ -27,7 +28,7 @@ void powerOff() {
 bool wifiConnect(bool showLeds)
 {
   Serial.println("wifi connect");
-  CRGB c = strp->getColor();
+  uint32_t c = strp->getColor();
   bool res = true;
   if (showLeds)
   {
@@ -80,7 +81,7 @@ bool wifiConnect(bool showLeds)
       strp->setColor(0x00FF00, true);
       WiFi.setHostname(DEVICE_NAME);
     delay(2000);
-    strp->setColor((uint32_t)c, true);
+    strp->setColor(c, true);
   }
   return res;
 }
@@ -94,7 +95,7 @@ bool wifiSetup(AnimationHelper *s)
   #ifdef BATTPIN
   pinMode(BATTPIN, INPUT);
   #endif
-  SPIFFS.begin(true);
+  SPIFFS.begin(false);
   res = wifiConnect(false);
 #ifdef USEOTA
   ArduinoOTA
@@ -144,30 +145,26 @@ bool wifiSetup(AnimationHelper *s)
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
-  if(SPIFFS.exists("/timer.tmr") && SPIFFS.open("/timer.tmr").size() > 1) {
-    File tF = SPIFFS.open("/timer.tmr");
-    tm times[2];
-    String temp = tF.readString();
-    tF.close();
-    //hh:mm:hh:mm
-    Serial.println(temp);
-    times[0].tm_hour = temp.substring(0, 2).toInt();
-    times[0].tm_min = temp.substring(3, 5).toInt();
-    times[1].tm_hour = temp.substring(6, 8).toInt();
-    times[1].tm_min = temp.substring(9).toInt();
-    timerOn = new Timer(times[0], powerOn);
-    timerOff = new Timer(times[1], powerOff);
+  tm timeOn = getTimer(SPIFFS, "on");
+  tm timeOff = getTimer(SPIFFS, "off");
+  if(timeOn.tm_hour != 69) {
+    timerOn = new Timer(timeOn, powerOn);
     timerOn->begin();
-    timerOff->begin();
+    timers = true;
   }
-  
+  if(timeOff.tm_hour != 69) {
+    timerOff = new Timer(timeOff, powerOff);
+    timerOff->begin();
+    timers = true;
+  }
 
   return res;
 }
 
 void handleIndex(AsyncWebServerRequest *req)
 {
-  req->send(SPIFFS, "/ui.html", "text/html");
+  if(SPIFFS.exists("/ui.html"))req->send(SPIFFS, "/ui.html", "text/html");
+  else req->send(404, "text", "ui.html not found");
 }
 
 void handleManifest(AsyncWebServerRequest *req)
@@ -188,7 +185,8 @@ void sendFile(AsyncWebServerRequest *req)
   String type = "text/";
   if(url.indexOf('.') >= 0) type.concat(url.substring(url.indexOf('.')+1));
   else type.concat("html");
-  req->send(SPIFFS, url, type);
+  if(SPIFFS.exists(url))req->send(SPIFFS, url, type);
+  else req->send(404, "text", url+" not found");
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -198,7 +196,7 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   {
   case WS_EVT_CONNECT:
     Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-    dataOnConnect(server);
+    updateData(server);
     break;
   case WS_EVT_DISCONNECT:
     Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -226,6 +224,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
         server->text(id, "a:" + *(strp->getAnimationNames()[i]));
+    }
+    if(msg.equals("update")) {
+      updateClients();
     }
     if (msg.startsWith("p:"))
     {
@@ -268,51 +269,37 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     }
     if(msg.startsWith("t:")) {
       //t:mode:hh:mm
-      if(timerOn != nullptr)
-      ws.textAll("print:" + String(timerOn->getTime().tm_hour) + String(timerOn->getTime().tm_min));
-      tm time;
       msg = msg.substring(msg.indexOf(':') + 1);
       String type = msg.substring(0, msg.indexOf(":"));
       msg = msg.substring(msg.indexOf(':') + 1);
-      time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
-      time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
-      String temp = "00:00:00:00";
-      if(SPIFFS.exists("/timer.tmr") && SPIFFS.open("/timer.tmr").size() > 1) {
-      File timerFile = SPIFFS.open("/timer.tmr", FILE_READ);
-      temp = timerFile.readString();
-      timerFile.close();
-      SPIFFS.remove("/timer.tmr");
-      delay(100);
-      }
-      File timerFile = SPIFFS.open("/timer.tmr", FILE_WRITE);
-      if(type.equals("check")) {
-        ws.textAll("print:" + String(timerOn->getTime().tm_hour)+":"+String(timerOn->getTime().tm_min));
-        //ws.textAll("print:" + String(uxTaskGetNumberOfTasks()));
-        return;
-      }
       if(type.equals("on")) {
-        if(timerOn != nullptr) {
-          timerOn->end();
-          delete(timerOn);
-        }
+        tm time;
+        time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
+        time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
         timerOn = new Timer(time, powerOn);
-        timerOn->begin();
-        temp = msg + ":" + temp.substring(6);
-        ws.textAll("print:File=" + temp);
+        saveTimer(SPIFFS, "on", time);
       }
-      else {
-        if(timerOff != nullptr) {
-          timerOff->end();
-          delete(timerOff);
-        }
+      else if(type.equals("off")) {
+        tm time;
+        time.tm_hour = msg.substring(0, msg.indexOf(':')).toInt();
+        time.tm_min = msg.substring(msg.indexOf(':')+1).toInt();
         timerOff = new Timer(time, powerOff);
-        timerOff->begin();
-        temp = temp.substring(0, 5) + ":" + msg;
-        ws.textAll("print:File=" + temp);
+        saveTimer(SPIFFS, "off", msg.substring(0, msg.indexOf(':')).toInt(), msg.substring(msg.indexOf(':')+1).toInt());
       }
-      for(int i = 0; i < temp.length(); i++) timerFile.write(temp.charAt(i));
-      delay(100);
-      timerFile.close();
+      else if(type.equals("toggle")) {
+        if(timerOn != nullptr && timerOff != nullptr) {
+          if(msg.equals("true")) {
+            timerOn->begin();
+            timerOff->begin();
+            timers = true;
+          }
+          else {
+            timerOn->end();
+            timerOff->end();
+            timers = false;
+          }
+        }
+      }
     }
     #ifdef USEMPU
     if (msg.startsWith("sleep:"))
@@ -320,31 +307,35 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       strp->setColor(0, true);
       WiFi.mode(WIFI_OFF); //idk if this will make esp draw less current in sleep but cant hurt
       #ifdef ESP32C3
-      esp_deep_sleep_enable_gpio_wakeup((1ULL << 5), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      esp_deep_sleep_enable_gpio_wakeup((1ULL << MPUINT), ESP_GPIO_WAKEUP_GPIO_HIGH);
+      #endif
+      #ifdef ESP32S2
+      esp_sleep_enable_ext0_wakeup(MPUINT, 1);
       #endif
       #ifdef ESP32DEV
       esp_sleep_enable_ext0_wakeup(MPUINT, 1);
       #endif
+      delay(50); //let pixels turn off
       esp_deep_sleep_start();
     }
     #endif
   }
 }
 
-void dataOnConnect(AsyncWebSocket* server)
+void updateData(AsyncWebSocket* server)
 {
   byte r = strp->getColor() >> 16;
   byte g = strp->getColor() >> 8;
   byte b = strp->getColor();
   server->textAll("p:" + String(strp->getPower()));
   String index;
-  if (r < 10)
+  if (r < 16)
     index += "0";
   index += String(r, HEX);
-  if (g < 10)
+  if (g < 16)
     index += "0";
   index += String(g, HEX);
-  if (b < 10)
+  if (b < 16)
     index += "0";
   index += String(b, HEX);
   server->textAll("c:#" + index);
@@ -361,13 +352,28 @@ void dataOnConnect(AsyncWebSocket* server)
   server->textAll("type:wall");
   #endif
   server->textAll("n:" + String(DEVICE_NAME));
-  if(SPIFFS.exists("/timer.tmr")) {
-    File timer = SPIFFS.open("/timer.tmr");
-    String temp = "t:";
-    temp += timer.readString();
+  if(SPIFFS.exists("/on.tmr")) {
+    tm time = getTimer(SPIFFS, "on");
+    String temp = "t:on:";
+    if(time.tm_hour < 10) temp += "0";
+    temp += time.tm_hour;
+    temp += ':';
+    if(time.tm_min < 10) temp += "0";
+    temp += time.tm_min;
     server->textAll(temp);
-    timer.close();
+    server->textAll("print:" + SPIFFS.open("/on.tmr").readString());
   }
+  if(SPIFFS.exists("/off.tmr")) {
+    tm time = getTimer(SPIFFS, "off");
+    String temp = "t:off:";
+    if(time.tm_hour < 10) temp += "0";
+    temp += time.tm_hour;
+    temp += ':';
+    if(time.tm_min < 10) temp += "0";
+    temp += time.tm_min;
+    server->textAll(temp);
+  }
+  server->textAll("t:toggle:" + String(timers));
 }
 #ifdef BATTPIN
 void sendBattery()
@@ -386,29 +392,12 @@ void sendBattery()
   #endif
 }
 #endif
-/*void updateClients() {
-  byte r = strp->getColor() >> 16;
-  byte g = strp->getColor() >> 8;
-  byte b = strp->getColor();
-  String index;
-  if (r < 10)
-    index += "0";
-  index += String(r, HEX);
-  if (g < 10)
-    index += "0";
-  index += String(g, HEX);
-  if (b < 10)
-    index += "0";
-  index += String(b, HEX);
-  ws.textAll("p:" + String(strp->getPower()));
-  ws.textAll("c:#" + index);
-  ws.textAll("b:" + String(strp->getBrightness()));
+void updateClients() {
+  updateData(&ws);
   #ifdef USEUPNP
-  wws.textAll("p:" + String(strp->getPower()));
-  wws.textAll("c:#" + index);
-  wws.textAll("b:" + String(strp->getBrightness()));
+  updateData(&wws);
   #endif
-}*/
+}
 void handleWiFi()
 {
 #ifdef BATTPIN

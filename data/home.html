@@ -1,16 +1,4 @@
-<!----Shoutout to Tyler for 'letting' me use his css---->
-<!DOCTYPE html>
-<html>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-    <head>
-      <link rel="stylesheet" href="style.css" />
-      <link rel="manifest" href="manifest.json" />
-      <script src="script.js"></script>
-    </head>
-    
-    <body>
-      <div id="page">
-        <h1 id="deviceName">Loading...</h1>
+<h1 id="deviceName">Loading...</h1>
         <div class="content">
           <div id="battery">
             <h3>Battery:</h3>
@@ -37,13 +25,3 @@
     <h3>Sleep</h3>
   <input type="button" value="Enter Sleep Mode" class="animButtons" id="slp" onclick="sendMsg('sleep:Sleep')">
   </div>
-      </div>
-    </body>
-    <div id="nav">
-      <ul class="navBar">
-        <li class="navLink"><button class="navButton" style="background-color: red;" onclick="switchPage('home', this)">Home</button></li>
-        <li class="navLink"><button class="navButton" onclick="switchPage('anims', this)">Animations</button></li>
-        <li class="navLink"><button class="navButton" onclick="switchPage('timer', this)">Timer</button></li>
-      </ul>
-    </div>
-</html>

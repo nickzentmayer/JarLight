@@ -25,8 +25,8 @@
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
                               {cycle, "Cycle"},
-                              //{halloween, "Halloween"}, 
-                              //{fall, "Fall"},
+                              {halloween, "Halloween"}, 
+                              {fall, "Fall"},
                               {christmas, "Christmas"},
                               {twinkle, "Twinkle"},
                               {candyCane, "Candy Cane"},

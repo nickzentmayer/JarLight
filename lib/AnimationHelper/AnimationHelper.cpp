@@ -5,17 +5,18 @@ AnimationHelper::AnimationHelper(int n, uint8_t p) {
     pin = p;
 }
 void AnimationHelper::begin() {
-    FastLED.addLeds<PIXELSPEED,DATAPIN,PIXELTYPE>(leds, NUMLEDS);
-    FastLED.setBrightness(brightness);
-    FastLED.show();
+    strip = new NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>(NLEDS, pin);
+    strip->Begin();
+    strip->SetBrightness(brightness);
+    strip->Show();
     setColor(100, 100, 100);
 }
 void AnimationHelper::setColor(uint8_t r, uint8_t g, uint8_t b, bool sho) {
-    color = CRGB(r, g, b);
+    color = RgbColor(r, g, b);
     if(sho) showColor();
 }
 void AnimationHelper::setColorHsv(uint8_t h, uint8_t s, uint8_t v, bool sho) {
-    color = CHSV(h, s, v);
+    color = HslColor(h, s, v);
     if(sho) showColor();
 }
 void AnimationHelper::setColor(uint32_t c, bool sho) {
@@ -27,7 +28,7 @@ void AnimationHelper::showColor()
 if(animation != -1)setAnimation(-1);
 fill(color);
 if(!power) return;
-FastLED.show();
+strip->Show();
 }
 void AnimationHelper::addAnimation(String* name, animPtr anim) {
     Serial.println(numAnims);
@@ -82,12 +83,21 @@ void AnimationHelper::setAnimation(int a) {
                 2,
                 NULL);
             #endif
+            #ifdef ESP32S2
+            xTaskCreate(
+                animations[animation],
+                "Animation Task",
+                2048,
+                this,
+                2,
+                NULL);
+            #endif
         }
     setPower(power);
 }
 void AnimationHelper::setBrightness(byte b) {
     brightness = b;
-    FastLED.setBrightness(brightness);
+    strip->SetBrightness(brightness);
     if(animation == -1 && power) showColor();
 }
 void AnimationHelper::setSpeed(byte s) {
@@ -116,8 +126,8 @@ void AnimationHelper::setPower(bool p) {
                 xSemaphoreGive(xSemaphore);
             }
         }
-        fill(CRGB(0, 0, 0));
-        FastLED.show();
+        fill(RgbColor(0, 0, 0));
+        strip->Show();
     }
 }
 void AnimationHelper::powerOn() {
@@ -131,27 +141,27 @@ void AnimationHelper::setAnimationSemaphore(semaPtr s) {
 }
 
 void AnimationHelper::setPixelColor(int p, uint8_t r, uint8_t g, uint8_t b, bool sho) {
-    leds[p] = CRGB(r, g, b);
+    strip->SetPixelColor(p, RgbColor(r, g, b));
     if(sho) show();
 }
 void AnimationHelper::setPixelColorHsv(int p, uint8_t h, uint8_t s, uint8_t v, bool sho) {
-    leds[p] = CHSV(h, s, v);
+    strip->SetPixelColor(p, HsbColor((float)h/255.0, (float)s/255.0, (float)v/255.0));
     if(sho) show();
 }
 void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
-    leds[p] = CRGB(c);
+    strip->SetPixelColor(p, HtmlColor(c));
     if(sho) show();
 }
 void AnimationHelper::show() {
-    FastLED.show();
+    strip->Show();
 }
 uint32_t AnimationHelper::getPixelColor(int p) {
-    return (uint32_t)leds[p];
+    return (uint32_t)HtmlColor(strip->GetPixelColor(p)).Color;
 }
 
-void AnimationHelper::fill(CRGB c) {
+void AnimationHelper::fill(RgbColor c) {
     for(int i=0; i<NUMLEDS; i++) 
-        leds[i] = c;
+        strip->SetPixelColor(i, c);
 }
 
 bool AnimationHelper::getPower() {
@@ -167,7 +177,7 @@ int AnimationHelper::getAnimation() {
     return animation;
 }
 int AnimationHelper::pixelCount() {
-    return sizeof(leds)/sizeof(CRGB);
+    return NUMLEDS;
 }
 String** AnimationHelper::getAnimationNames() {
     return animNames;
@@ -176,11 +186,11 @@ int AnimationHelper::getNumberAnimations() {
     return numAnims;
 }
 uint32_t AnimationHelper::getColor() {
-    return (color.r << 16 + color.g << 8 + color.b);
+    return HtmlColor(color).Color;
 }
-CRGB* AnimationHelper::getStrip() {
-    return leds;
+NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* AnimationHelper::getStrip() {
+    return strip;
 }
-void AnimationHelper::setStrip(CRGB* s) {
-    leds = s;   
+void AnimationHelper::setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s) {
+    strip = s;   
 }
