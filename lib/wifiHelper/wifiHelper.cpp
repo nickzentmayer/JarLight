@@ -95,7 +95,7 @@ bool wifiSetup(AnimationHelper *s)
   #ifdef BATTPIN
   pinMode(BATTPIN, INPUT);
   #endif
-  SPIFFS.begin(true);
+  SPIFFS.begin(false);
   res = wifiConnect(false);
 #ifdef USEOTA
   ArduinoOTA
@@ -163,7 +163,8 @@ bool wifiSetup(AnimationHelper *s)
 
 void handleIndex(AsyncWebServerRequest *req)
 {
-  req->send(SPIFFS, "/ui.html", "text/html");
+  if(SPIFFS.exists("/ui.html"))req->send(SPIFFS, "/ui.html", "text/html");
+  else req->send(404, "text", "ui.html not found");
 }
 
 void handleManifest(AsyncWebServerRequest *req)
@@ -184,7 +185,8 @@ void sendFile(AsyncWebServerRequest *req)
   String type = "text/";
   if(url.indexOf('.') >= 0) type.concat(url.substring(url.indexOf('.')+1));
   else type.concat("html");
-  req->send(SPIFFS, url, type);
+  if(SPIFFS.exists(url))req->send(SPIFFS, url, type);
+  else req->send(404, "text", url+" not found");
 }
 
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
