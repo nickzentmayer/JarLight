@@ -1,5 +1,5 @@
 #pragma once
-#include <NeoPixelBrightnessBus.h>
+#include <FastLED.h>
 #include <Arduino.h>
 #include "config.h"
 
@@ -20,7 +20,7 @@ typedef void (*semaPtr) (SemaphoreHandle_t*);
 
 class AnimationHelper {
     public:
-    AnimationHelper(int n, uint8_t p);
+    AnimationHelper(int n);
 
     void begin();
     void setColor(uint8_t r, uint8_t g, uint8_t b, bool sho = false);
@@ -50,14 +50,14 @@ class AnimationHelper {
     String** getAnimationNames();
     int getNumberAnimations();
     uint32_t getColor();
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* getStrip();
-    void setStrip(NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* s);
+    CRGB* getStrip();
+    void setStrip(CRGB* s);
 
     private:
-    void fill(RgbColor c);
-    uint8_t pin;
-    NeoPixelBrightnessBus<PIXELTYPE, PIXELSPEED>* strip;
-    RgbColor color;
+    void fill(CRGB c);
+    //uint8_t pin;
+    CRGB* strip;
+    CRGB color;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;

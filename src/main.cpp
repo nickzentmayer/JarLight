@@ -12,7 +12,7 @@
 #include <mpu6500.h>
 MPU mpu(MPUADDR);
 #endif
-AnimationHelper strip(NUMLEDS, DATAPIN);
+AnimationHelper strip(NUMLEDS);
 
 
 void setup() {
