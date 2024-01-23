@@ -25,7 +25,7 @@ void cycle(void* s)  {
     if(fph >= 1.0) fph = 0;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
+    vTaskDelay(abs(25 * (1.0 - helper->getSpeed())));
     }
 }
 
@@ -70,7 +70,7 @@ void cylon(void* s) {
     if(pos/2 >= helper->pixelCount() - 1 || pos < 0) dir = !dir;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(abs(10 * (1.0 - helper->getSpeed())));
+    vTaskDelay(abs(25 * (1.0 - helper->getSpeed())));
   }
 }
 

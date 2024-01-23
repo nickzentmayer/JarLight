@@ -246,8 +246,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     {
       // ledColor(0,0,0);
       // lAnim = animation;
-      strp->setAnimation(value.toInt());
-      Serial.println(strp->getAnimation());
+      if(value.toInt() <= strp->getNumberAnimations())strp->setAnimation(value.toInt());
+      //Serial.println(strp->getAnimation());
     }
     if (msg.startsWith("b:"))
     {

@@ -45,6 +45,7 @@ function updatePage(data) {
     }
     if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
     if(topic == 'a' && animButtons != null) {
+        for(let i = 0; i < animButtons.getElementsByClassName("animButtons").length; i++) if(animButtons.getElementsByClassName("animButtons")[i].textContent == value) return;
         var b = document.createElement("button");
         b.value = (animCount++).toString();
         b.className = "animButtons";
@@ -108,14 +109,15 @@ async function invalidFlash(id) {
 }
 
 async function switchPage(page, button) {
+    let p = document.getElementById("page");
+    p.innerHTML = "<h1>Loading...</h1>";
+    let response = await fetch("/"+page+".html");
+    p.innerHTML = await response.text();
     let navs = document.getElementsByClassName("navButton");
     for(var i = 0; i < navs.length; i++) {
         navs[i].style.cssText = "background-color: #333;";
     }
     button.style.cssText = "background-color: red;"
-    let p = document.getElementById("page");
-    let response = await fetch("/"+page+".html");
-    p.innerHTML = await response.text();
     animButtons = document.getElementById("animations");
     sendMsg("update");
     animCount = 0;
