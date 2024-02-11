@@ -1,7 +1,7 @@
 #include "wifiHelper.h"
 
 AsyncWebServer server(PORT);
-WiFiUDP syncer;
+WebSocketsClient* syncer;
 #ifdef USEUPNP
 AsyncWebServer wanServer(UPNP_PORT);
 TinyUPnP *tinyUPnP = new TinyUPnP(20000);
@@ -13,10 +13,7 @@ bool recon = false;
 bool timers = false;
 bool sync_ = false;
 int syncNum = 0;
-IPAddress* syncIps = nullptr;
-int* syncPorts = nullptr;
-SemaphoreHandle_t udpSem = xSemaphoreCreateMutex();
-TaskHandle_t* udpT = nullptr;
+
 
 Timer* timerOn = nullptr;
 Timer* timerOff = nullptr;
@@ -152,6 +149,7 @@ bool wifiSetup(AnimationHelper *s)
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
+  MDNS.addService("JLED", "udp", SYNCPORT);
   tm timeOn = getTimer(SPIFFS, "on");
   tm timeOff = getTimer(SPIFFS, "off");
   if(timeOn.tm_hour != 69) {
@@ -224,59 +222,14 @@ void updateSync() {
   int l = syncNum;
       syncNum = MDNS.queryService("JLED", "udp");
       if(syncNum != l) {
-        delete syncIps;
-        delete syncPorts;
-        syncPorts = new int[syncNum];
-        syncIps = new IPAddress[syncNum];
-        for(int i = 0; i <= syncNum; i++) {
-          syncIps[i] = MDNS.IP(i);
-          syncPorts[i] = MDNS.port(i);
+        if(syncer != nullptr) for(int i = 0; i < l; i++) syncer[i].disconnect();
+        delete syncer;
+        syncer = new WebSocketsClient[syncNum]();
+        for(int i = 0; i < syncNum; i++) {
+          syncer[i].begin(MDNS.IP(i), 80, "/ws");
+          syncer[i].setReconnectInterval(5000);
         }
       }
-}
-
-void startSync() {
-  syncer.begin(SYNCPORT);
-  MDNS.addService("JLED", "udp", SYNCPORT);
-  xSemaphoreTake(udpSem, portMAX_DELAY);
-  if(udpT != nullptr) vTaskDelete(udpT);
-  xSemaphoreGive(udpSem);
-  #ifdef ESP32DEV
-            xTaskCreatePinnedToCore(
-                udpTask,
-                "UDP Task",
-                2048,
-                NULL,
-                1,
-                udpT,
-                0);
-            #endif
-            #ifdef ESP32C3
-            xTaskCreate(
-                udpTask,
-                "UDP Task",
-                4096,
-                NULL,
-                1,
-                udpT);
-            #endif
-            #ifdef ESP32S2
-            xTaskCreate(
-                udpTask,
-                "UDP Task",
-                2048,
-                NULL,
-                1,
-                udpT);
-            #endif
-}
-
-void stopSync() {
-  syncer.stop();
-  xSemaphoreTake(udpSem, portMAX_DELAY);
-  if(udpT != nullptr)vTaskDelete(udpT);
-  xSemaphoreGive(udpSem);
-  udpT = nullptr;
 }
 
 void parseMsg(String msg) {
@@ -368,11 +321,10 @@ void parseMsg(String msg) {
     if(msg.startsWith("sync:")) {
       if(value.equals("true")) {
         sync_ = true;
-        startSync();
+        updateSync();
       }
       else {
         sync_ = false;
-        stopSync();
       }
     }
     #ifdef USEMPU
@@ -403,6 +355,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     
     data[len] = 0;
     String msg = String((char *)data);
+    bool relay = true;
+    if(msg.startsWith("j:")) {
+      if(!sync_) return;
+      msg = msg.substring(msg.indexOf(":") + 1);
+      relay = false;
+    }
     if (msg.equals("getAnimations"))
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
@@ -412,14 +370,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       updateClients();
     }
     else {
-      if(sync_) 
+      if(sync_ && relay) 
         {
-        for(int i = 0; i < syncNum; i++) 
-          {
-          syncer.beginPacket(MDNS.IP(i), MDNS.port(i));
-          syncer.print(msg);
-          syncer.endPacket();
-          }
+        for(int i = 0; i < syncNum; i++) syncer[i].sendTXT("j:" + msg);
         }
         parseMsg(msg);
     }
@@ -513,14 +466,12 @@ void handleWiFi()
 {
 
   static unsigned long t = millis();
-  if (millis() - t > 10000)
+  if (millis() - t > 30000)
   {
     #ifdef BATTPIN
     sendBattery();
     #endif
-    if(sync) {
-      
-    }
+    if(sync_)updateSync();
     t = millis();
   }
 #ifdef USEOTA
@@ -533,6 +484,7 @@ tinyUPnP->updatePortMappings(600000);
 EasyDDNS.update(10000);
 #endif
   ws.cleanupClients();
+  if(sync_) for(int i = 0; i < syncNum; i++) syncer[i].loop();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
   {
     if (!USE_SOFT_AP)
@@ -547,20 +499,5 @@ EasyDDNS.update(10000);
   {
     wifiConnect(true);
     recon = false;
-  }
-}
-
-void udpTask(void* none) {
-  updateSync();
-  for(;;) {
-    xSemaphoreTake(udpSem, portMAX_DELAY);
-    if(syncer.parsePacket() > 0) {
-      char buff[100];
-      if(syncer.readBytes(buff, 100) > 0) {
-        parseMsg(String(buff));
-      }
-    }
-    xSemaphoreGive(udpSem);
-    vTaskDelay(1);
   }
 }
