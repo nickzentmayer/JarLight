@@ -2,7 +2,7 @@
 #include <ArduinoOTA.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
-#include <WiFiUdp.h>
+#include <WebSocketsClient.h>
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
@@ -27,7 +27,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
 void updateData(AsyncWebSocket* server);
 void updateClients();
 void handleWiFi();
-void udpTask(void* none);
 #ifdef BATTPIN
 void sendBattery();
 #endif
