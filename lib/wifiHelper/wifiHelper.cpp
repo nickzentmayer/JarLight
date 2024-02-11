@@ -13,6 +13,10 @@ bool recon = false;
 bool timers = false;
 bool sync_ = false;
 int syncNum = 0;
+IPAddress* syncIps = nullptr;
+int* syncPorts = nullptr;
+SemaphoreHandle_t udpSem = xSemaphoreCreateMutex();
+TaskHandle_t* udpT = nullptr;
 
 Timer* timerOn = nullptr;
 Timer* timerOff = nullptr;
@@ -216,10 +220,63 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
 }
 
+void updateSync() {
+  int l = syncNum;
+      syncNum = MDNS.queryService("JLED", "udp");
+      if(syncNum != l) {
+        delete syncIps;
+        delete syncPorts;
+        syncPorts = new int[syncNum];
+        syncIps = new IPAddress[syncNum];
+        for(int i = 0; i <= syncNum; i++) {
+          syncIps[i] = MDNS.IP(i);
+          syncPorts[i] = MDNS.port(i);
+        }
+      }
+}
+
 void startSync() {
-  syncNum = MDNS.queryService("JLED", "udp");
   syncer.begin(SYNCPORT);
   MDNS.addService("JLED", "udp", SYNCPORT);
+  xSemaphoreTake(udpSem, portMAX_DELAY);
+  if(udpT != nullptr) vTaskDelete(udpT);
+  xSemaphoreGive(udpSem);
+  #ifdef ESP32DEV
+            xTaskCreatePinnedToCore(
+                udpTask,
+                "UDP Task",
+                2048,
+                NULL,
+                1,
+                udpT,
+                0);
+            #endif
+            #ifdef ESP32C3
+            xTaskCreate(
+                udpTask,
+                "UDP Task",
+                4096,
+                NULL,
+                1,
+                udpT);
+            #endif
+            #ifdef ESP32S2
+            xTaskCreate(
+                udpTask,
+                "UDP Task",
+                2048,
+                NULL,
+                1,
+                udpT);
+            #endif
+}
+
+void stopSync() {
+  syncer.stop();
+  xSemaphoreTake(udpSem, portMAX_DELAY);
+  if(udpT != nullptr)vTaskDelete(udpT);
+  xSemaphoreGive(udpSem);
+  udpT = nullptr;
 }
 
 void parseMsg(String msg) {
@@ -315,7 +372,7 @@ void parseMsg(String msg) {
       }
       else {
         sync_ = false;
-        syncer.stop();
+        stopSync();
       }
     }
     #ifdef USEMPU
@@ -355,7 +412,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       updateClients();
     }
     else {
-      if(sync) 
+      if(sync_) 
         {
         for(int i = 0; i < syncNum; i++) 
           {
@@ -461,18 +518,8 @@ void handleWiFi()
     #ifdef BATTPIN
     sendBattery();
     #endif
-    if(sync) {
-      syncNum = MDNS.queryService("JLED", "udp");
-    }
     t = millis();
   }
-  int n = syncer.parsePacket();
-if(n > 0) {
-  char buff[255];
-  if(syncer.readBytes(buff, 255) > 0) {
-    parseMsg(String(buff));
-  }
-}
 #ifdef USEOTA
   ArduinoOTA.handle();
 #endif
@@ -497,5 +544,20 @@ EasyDDNS.update(10000);
   {
     wifiConnect(true);
     recon = false;
+  }
+}
+
+void udpTask(void* none) {
+  updateSync();
+  for(;;) {
+    xSemaphoreTake(udpSem, portMAX_DELAY);
+    if(syncer.parsePacket() > 0) {
+      char buff[100];
+      if(syncer.readBytes(buff, 100) > 0) {
+        parseMsg(String(buff));
+      }
+    }
+    xSemaphoreGive(udpSem);
+    vTaskDelay(1);
   }
 }
