@@ -1,4 +1,4 @@
-//config file, using seeed studio xiao esp32c3 
+//config file, change settings according to device
 #define DEVICE_NAME "Dorm Lights" //Caps and spaces allowed, dont uses symbols
 
 //enable serial monitor (disable for production, espeacially esp's with USB (S3, C3, S2, etc.))
@@ -14,6 +14,7 @@
 #define USEOTA
 //local webserver port
 #define PORT 80
+#define SYNCPORT 420
 //probably unessicary and pretty insecure but its here :))))
 #define USEUPNP
 #define UPNP_PORT 6996 //port for upnp to forward and websever to be on, will NOT overwrite local port

@@ -25,7 +25,7 @@ void AnimationHelper::setColor(uint32_t c, bool sho) {
 void AnimationHelper::showColor() 
 {
 if(animation != -1)setAnimation(-1);
-fill(color);
+fill((uint32_t)color);
 if(!power) return;
 FastLED.show();
 }
@@ -125,7 +125,7 @@ void AnimationHelper::setPower(bool p) {
                 xSemaphoreGive(xSemaphore);
             }
         }
-        fill(CRGB(0, 0, 0));
+        fill(0);
         FastLED.show();
     }
 }
@@ -154,13 +154,27 @@ void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
 void AnimationHelper::show() {
     FastLED.show();
 }
+void AnimationHelper::setPrimeAnimColor(byte r, byte g, byte b) {
+    primaryAnimColor = ((uint32_t)r << 16) + ((uint32_t)g << 8) + (b);
+}
+    
+void AnimationHelper::setSecAnimColor(byte r, byte g, byte b) {
+    secondaryAnimColor = ((uint32_t)r << 16) + ((uint32_t)g << 8) + (b);
+}
+uint32_t AnimationHelper::getPrimeAnimColor() {
+    return primaryAnimColor;
+}
+    
+uint32_t AnimationHelper::getSecAnimColor() {
+    return secondaryAnimColor;
+}
 uint32_t AnimationHelper::getPixelColor(int p) {
     return (uint32_t)strip[p];
 }
 
-void AnimationHelper::fill(CRGB c) {
+void AnimationHelper::fill(uint32_t c) {
     for(int i=0; i<NUMLEDS; i++) 
-        strip[i] = c;
+        strip[i] = CRGB(c);
 }
 
 bool AnimationHelper::getPower() {

@@ -18,9 +18,10 @@
     void christmas(void* s);
     void twinkle(void* s);
     uint32_t NewFunction(AnimationHelper *helper);
-    void candyCane(void *s);
-    void multiSparkle(void *s);
-    void chSparkle(void *s);
+    void candyCane(void* s);
+    void multiSparkle(void* s);
+    void chSparkle(void* s);
+    void chase(void* s);
 
     //declare Animation array {void AnimationFunction, String name}
     Animation animations[] = {{cylon, "Cylon"}, 
@@ -31,5 +32,6 @@
                               {twinkle, "Twinkle"},
                               {candyCane, "Candy Cane"},
                               {multiSparkle, "Multicolor Sparkle"},
-                              {chSparkle, "Christmas Sparkle"}};
+                              {chSparkle, "Christmas Sparkle"},
+                              {chase, "Chase"}};
     #endif

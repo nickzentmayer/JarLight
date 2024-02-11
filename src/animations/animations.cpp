@@ -25,7 +25,7 @@ void cycle(void* s)  {
     if(fph >= 1.0) fph = 0;
     helper->show();
     xSemaphoreGive(*xSemaphore);
-    vTaskDelay(abs(25 * (1.0 - helper->getSpeed())));
+    vTaskDelay(abs(5 * (1.0 - helper->getSpeed())));
     }
 }
 
@@ -156,7 +156,7 @@ void twinkle(void* s) {
       switch (random(3))
       {
         case 0:
-          helper->setPixelColor(random(helper->pixelCount()-1), helper->getColor());
+          helper->setPixelColor(random(helper->pixelCount()-1), helper->getPrimeAnimColor());
           break;
       default:
         break;
@@ -267,3 +267,37 @@ void chSparkle(void* s) {
     vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
   }
 }
+
+void chase(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    int shift;
+    for(int i = 0; i < helper->pixelCount(); i++) {
+      int p = (i+shift) % helper->pixelCount();
+      if(i % 30 < 15) helper->setPixelColor(p, helper->getPrimeAnimColor());
+      else helper->setPixelColor(p, helper->getSecAnimColor());
+  }
+    if(++shift >= helper->pixelCount()) shift = 0;
+    helper->show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(abs(250 * (1.0 - helper->getSpeed())));
+  }
+}
+
+/*void fade(void* s) {
+  AnimationHelper* helper = static_cast<AnimationHelper *>(s);
+  bool isPrimary = true;
+  int waitCycles = 50;
+  for(;;) {
+    xSemaphoreTake(*xSemaphore, portMAX_DELAY);
+    if(waitCycles-- > 0) {
+      if(isPrimary) helper->fill(helper->getPrimeAnimColor());
+    }
+    helper->getPrimeAnimColor();
+    helper->show();
+    xSemaphoreGive(*xSemaphore);
+    vTaskDelay(abs(100 * (1.0 - helper->getSpeed())));
+  }
+}*/

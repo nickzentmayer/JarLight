@@ -17,8 +17,14 @@
         </div>
         <div id="static">
             <h3 for="colorpicker">Color Picker:</h3>
-            <input type="color" id="colorpicker" value="#000000" style="position: relative; scale: 200%;" oninput="sendMsg('c:'+this.value.toString())"> 
+            <input type="color" id="colorpicker" class="colorpicker" value="#000000" style="position: relative; scale: 200%;" oninput="sendMsg('c:'+this.value.toString())"> 
         </div>
+      </div>
+      <div id="syn">
+        <h3>Local Sync:</h3>
+        <label class="switch">
+          <input type="checkbox" id="sync" class="sliderSwitch" onclick="sendMsg('sync:'+this.checked.toString())">
+          <span class="sliderSwitch round" id="sync"></span>
       </div>
       <input type="button" value="Reconnect to Network" class="animButtons" id="recon" onclick="sendMsg('w:recon')">
   <div id="sleep">

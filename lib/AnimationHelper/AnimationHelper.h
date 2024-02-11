@@ -41,6 +41,10 @@ class AnimationHelper {
     void setPixelColor(int p, uint32_t c, bool sho = false);
     uint32_t getPixelColor(int p);
     void show();
+    void setPrimeAnimColor(byte r, byte g, byte b);
+    void setSecAnimColor(byte r, byte g, byte b);
+    uint32_t getPrimeAnimColor();
+    uint32_t getSecAnimColor();
 
     bool getPower();
     byte getBrightness();
@@ -54,10 +58,12 @@ class AnimationHelper {
     void setStrip(CRGB* s);
 
     private:
-    void fill(CRGB c);
+    void fill(uint32_t c);
     //uint8_t pin;
     CRGB* strip;
     CRGB color;
+    uint32_t primaryAnimColor = 0xFFFFFF; //default these to white and black
+    uint32_t secondaryAnimColor = 0x000000;
     int NLEDS = 0;
     bool power = true;
     byte brightness = 100;

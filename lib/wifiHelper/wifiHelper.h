@@ -2,6 +2,7 @@
 #include <ArduinoOTA.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
+#include <WiFiUdp.h>
 #include "config.h"
 #include "SPIFFS.h"
 #include "AnimationHelper.h"
@@ -18,6 +19,7 @@ bool wifiSetup(AnimationHelper* s);
 
 void handleIndex(AsyncWebServerRequest *req);
 void handleManifest(AsyncWebServerRequest *req);
+void handleSync(AsyncWebServerRequest *req);
 void sendFile(AsyncWebServerRequest *req);
 void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
              void *arg, uint8_t *data, size_t len);
