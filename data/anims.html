@@ -2,6 +2,21 @@
     <h3>Animation Speed:</h3>
     <input type="range" min="0" max="245" value="100" id="speed" class="slide" oninput="sendMsg('s:'+this.value.toString())">
   </div>
+  <div id="colors" style="display: block; text-align: center;">
+    <h3>Animation Color Pickers:</h3>
+    <ul class="animColors">
+      <li>
+        <input type="color" id="animcolorpicker" value="#000000" style="scale: 200%;" class="colorpicker" oninput="sendMsg('ca:1:'+this.value.toString())"> 
+      <p>Primary Color</p>
+      </li>
+      <li>
+        <input type="color" id="animcolorpicker2" value="#000000" style="scale: 200%;" class="colorpicker" oninput="sendMsg('ca:2:'+this.value.toString())"> 
+      <p>Secondary Color</p>
+      </li>
+    </ul>
+      
+    </div>
+</div>
 <div id="animations">
     <h3>Animations</h3>
 </div>

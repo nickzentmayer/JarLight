@@ -1,6 +1,7 @@
 #include "wifiHelper.h"
 
 AsyncWebServer server(PORT);
+WiFiUDP syncer;
 #ifdef USEUPNP
 AsyncWebServer wanServer(UPNP_PORT);
 TinyUPnP *tinyUPnP = new TinyUPnP(20000);
@@ -10,6 +11,12 @@ AsyncWebSocket ws("/ws");
 AnimationHelper *strp;
 bool recon = false;
 bool timers = false;
+bool sync_ = false;
+int syncNum = 0;
+IPAddress* syncIps = nullptr;
+int* syncPorts = nullptr;
+SemaphoreHandle_t udpSem = xSemaphoreCreateMutex();
+TaskHandle_t* udpT = nullptr;
 
 Timer* timerOn = nullptr;
 Timer* timerOff = nullptr;
@@ -179,6 +186,8 @@ void handleManifest(AsyncWebServerRequest *req)
   req->send(200, "text/json", data);
 }
 
+
+
 void sendFile(AsyncWebServerRequest *req)
 {
   String url = req->url();
@@ -211,23 +220,67 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, AsyncWebSocket* server)
-{
-  AwsFrameInfo *info = (AwsFrameInfo *)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
-  {
-    
-    data[len] = 0;
-    String msg = String((char *)data);
-    String value = msg.substring(msg.indexOf(":") + 1);
-    if (msg.equals("getAnimations"))
-    {
-      for (int i = 0; i < strp->getNumberAnimations(); i++)
-        server->text(id, "a:" + *(strp->getAnimationNames()[i]));
-    }
-    if(msg.equals("update")) {
-      updateClients();
-    }
+void updateSync() {
+  int l = syncNum;
+      syncNum = MDNS.queryService("JLED", "udp");
+      if(syncNum != l) {
+        delete syncIps;
+        delete syncPorts;
+        syncPorts = new int[syncNum];
+        syncIps = new IPAddress[syncNum];
+        for(int i = 0; i <= syncNum; i++) {
+          syncIps[i] = MDNS.IP(i);
+          syncPorts[i] = MDNS.port(i);
+        }
+      }
+}
+
+void startSync() {
+  syncer.begin(SYNCPORT);
+  MDNS.addService("JLED", "udp", SYNCPORT);
+  xSemaphoreTake(udpSem, portMAX_DELAY);
+  if(udpT != nullptr) vTaskDelete(udpT);
+  xSemaphoreGive(udpSem);
+  #ifdef ESP32DEV
+            xTaskCreatePinnedToCore(
+                udpTask,
+                "UDP Task",
+                2048,
+                NULL,
+                1,
+                udpT,
+                0);
+            #endif
+            #ifdef ESP32C3
+            xTaskCreate(
+                udpTask,
+                "UDP Task",
+                4096,
+                NULL,
+                1,
+                udpT);
+            #endif
+            #ifdef ESP32S2
+            xTaskCreate(
+                udpTask,
+                "UDP Task",
+                2048,
+                NULL,
+                1,
+                udpT);
+            #endif
+}
+
+void stopSync() {
+  syncer.stop();
+  xSemaphoreTake(udpSem, portMAX_DELAY);
+  if(udpT != nullptr)vTaskDelete(udpT);
+  xSemaphoreGive(udpSem);
+  udpT = nullptr;
+}
+
+void parseMsg(String msg) {
+  String value = msg.substring(msg.indexOf(":") + 1);
     if (msg.startsWith("p:"))
     {
       // power = msg.substring(msg.indexOf(":")+1).equals("true");
@@ -242,12 +295,23 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       int blue = strtoul(color.substring(4).c_str(), NULL, 16);
       strp->setColor(red, green, blue, true);
     }
+    if (msg.startsWith("ca:"))
+    {
+      msg = msg.substring(msg.indexOf(":")+1);
+      int colorNum = msg.substring(0, msg.indexOf(":")).toInt();
+      String color = msg.substring(msg.indexOf(":") + 2);
+      int red = strtoul(color.substring(0, 2).c_str(), NULL, 16);
+      int green = strtoul(color.substring(2, 4).c_str(), NULL, 16);
+      int blue = strtoul(color.substring(4).c_str(), NULL, 16);
+      if(colorNum == 1)strp->setPrimeAnimColor(red, green, blue);
+      else strp->setSecAnimColor(red, green, blue);
+    }
     if (msg.startsWith("a:"))
     {
       // ledColor(0,0,0);
       // lAnim = animation;
-      strp->setAnimation(value.toInt());
-      Serial.println(strp->getAnimation());
+      if(value.toInt() <= strp->getNumberAnimations())strp->setAnimation(value.toInt());
+      //Serial.println(strp->getAnimation());
     }
     if (msg.startsWith("b:"))
     {
@@ -301,6 +365,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
         }
       }
     }
+    if(msg.startsWith("sync:")) {
+      if(value.equals("true")) {
+        sync_ = true;
+        startSync();
+      }
+      else {
+        sync_ = false;
+        stopSync();
+      }
+    }
     #ifdef USEMPU
     if (msg.startsWith("sleep:"))
     {
@@ -319,15 +393,43 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       esp_deep_sleep_start();
     }
     #endif
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, AsyncWebSocket* server)
+{
+  AwsFrameInfo *info = (AwsFrameInfo *)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+  {
+    
+    data[len] = 0;
+    String msg = String((char *)data);
+    if (msg.equals("getAnimations"))
+    {
+      for (int i = 0; i < strp->getNumberAnimations(); i++)
+        server->text(id, "a:" + *(strp->getAnimationNames()[i]));
+    }
+    else if(msg.equals("update")) {
+      updateClients();
+    }
+    else {
+      if(sync_) 
+        {
+        for(int i = 0; i < syncNum; i++) 
+          {
+          syncer.beginPacket(MDNS.IP(i), MDNS.port(i));
+          syncer.print(msg);
+          syncer.endPacket();
+          }
+        }
+        parseMsg(msg);
+    }
   }
 }
 
-void updateData(AsyncWebSocket* server)
-{
-  byte r = strp->getColor() >> 16;
-  byte g = strp->getColor() >> 8;
-  byte b = strp->getColor();
-  server->textAll("p:" + String(strp->getPower()));
+String colorToHex(uint32_t color) {
+  byte r = color >> 16;
+  byte g = color >> 8;
+  byte b = color;
   String index;
   if (r < 16)
     index += "0";
@@ -338,7 +440,15 @@ void updateData(AsyncWebSocket* server)
   if (b < 16)
     index += "0";
   index += String(b, HEX);
-  server->textAll("c:#" + index);
+  return index;
+}
+
+void updateData(AsyncWebSocket* server)
+{
+  server->textAll("p:" + String(strp->getPower()));
+  server->textAll("c:#" + colorToHex(strp->getColor()));
+  server->textAll("ca:1:#" + colorToHex(strp->getPrimeAnimColor()));
+  server->textAll("ca:2:#" + colorToHex(strp->getSecAnimColor()));
   server->textAll("b:" + String(strp->getBrightness()));
   server->textAll("s:" + String(strp->getSpeed()*255));
   if (WiFi.getMode() == WIFI_AP)
@@ -374,6 +484,7 @@ void updateData(AsyncWebSocket* server)
     server->textAll(temp);
   }
   server->textAll("t:toggle:" + String(timers));
+  server->textAll("sync:"+String(sync_));
 }
 #ifdef BATTPIN
 void sendBattery()
@@ -400,14 +511,18 @@ void updateClients() {
 }
 void handleWiFi()
 {
-#ifdef BATTPIN
+
   static unsigned long t = millis();
   if (millis() - t > 10000)
   {
+    #ifdef BATTPIN
     sendBattery();
+    #endif
+    if(sync) {
+      
+    }
     t = millis();
   }
-#endif
 #ifdef USEOTA
   ArduinoOTA.handle();
 #endif
@@ -432,5 +547,20 @@ EasyDDNS.update(10000);
   {
     wifiConnect(true);
     recon = false;
+  }
+}
+
+void udpTask(void* none) {
+  updateSync();
+  for(;;) {
+    xSemaphoreTake(udpSem, portMAX_DELAY);
+    if(syncer.parsePacket() > 0) {
+      char buff[100];
+      if(syncer.readBytes(buff, 100) > 0) {
+        parseMsg(String(buff));
+      }
+    }
+    xSemaphoreGive(udpSem);
+    vTaskDelay(1);
   }
 }

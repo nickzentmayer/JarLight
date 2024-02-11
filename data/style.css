@@ -20,6 +20,7 @@ html {
 
             h3 {
                 color: red;
+                padding-bottom: 10px;
             }
 
             p {
@@ -125,7 +126,7 @@ html {
                 margin-bottom: 50px;
             }
 
-            #colorpicker {
+            .colorpicker {
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
@@ -138,7 +139,7 @@ html {
                 cursor: pointer;
             }
 
-            #colorpicker::-webkit-color-swatch {
+            .colorpicker::-webkit-color-swatch {
                 border-radius: 10px;
                 border: none;
             }
@@ -252,7 +253,7 @@ html {
               }
               .navButton {
                 display: inline;
-                padding: 8px;
+                margin: 8px;
                 border-style: solid;
                 border-color: white;
                 border-width: 3px;
@@ -262,4 +263,16 @@ html {
                 margin: 0px;
                 color: white;
                 background-color: #333;
+              }
+              .animColors{
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                text-align: center;
+                display: block;
+              }
+              .animColors li{
+                display: inline-block;
+                padding: 20px;
               }

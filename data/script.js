@@ -19,6 +19,7 @@ function onOpen(event) {
     animCount = 0;
     sendMsg('getAnimations');
     }
+    switchPage("home", document.getElementById('hb'));
 }
 
 function onClose(event) {
@@ -33,9 +34,14 @@ function updatePage(data) {
     var topic = data.toString().substring(0, data.toString().indexOf(':'));
     var value = data.toString().substring(data.toString().indexOf(':') + 1);
     console.log(topic + value)
-    if (topic == 'p') if (value == "1") document.getElementById('powerSwitch').checked = true;
-    else document.getElementById('powerSwitch').checked = false;
+    if (topic == 'p') document.getElementById('powerSwitch').checked = (value == "1");
     if (topic == 'c') document.getElementById('colorpicker').value = value;
+    if (topic == 'ca') {
+        let num = value.substring(0, value.toString().indexOf(':'));
+        value = value.substring(value.toString().indexOf(':') + 1);
+        if(num == "1")document.getElementById('animcolorpicker').value = value;
+        else if(num == "2") document.getElementById('animcolorpicker2').value = value;
+    } 
     if (topic == 'b') document.getElementById('bright').value = value;
     if (topic == 's') document.getElementById('speed').value = value;
     if (topic == 'batt') document.getElementById('batP').innerHTML = value + "%";
@@ -45,6 +51,7 @@ function updatePage(data) {
     }
     if (topic == 'n') document.getElementById('deviceName').innerHTML = value;
     if(topic == 'a' && animButtons != null) {
+        for(let i = 0; i < animButtons.getElementsByClassName("animButtons").length; i++) if(animButtons.getElementsByClassName("animButtons")[i].textContent == value) return;
         var b = document.createElement("button");
         b.value = (animCount++).toString();
         b.className = "animButtons";
@@ -75,6 +82,9 @@ function updatePage(data) {
     }
     if(topic == 'print') {
         console.log(value);
+    }
+    if(topic == 'sync') {
+        document.getElementById("sync").checked = (value == "1");
     }
 }
 window.addEventListener('load', onLoad);
@@ -108,18 +118,19 @@ async function invalidFlash(id) {
 }
 
 async function switchPage(page, button) {
+    let p = document.getElementById("page");
+    p.innerHTML = "<h1>Loading...</h1>";
+    let response = await fetch("/"+page+".html");
+    p.innerHTML = await response.text();
     let navs = document.getElementsByClassName("navButton");
     for(var i = 0; i < navs.length; i++) {
         navs[i].style.cssText = "background-color: #333;";
     }
-    button.style.cssText = "background-color: red;"
-    let p = document.getElementById("page");
-    let response = await fetch("/"+page+".html");
-    p.innerHTML = await response.text();
     animButtons = document.getElementById("animations");
     sendMsg("update");
     animCount = 0;
     sendMsg('getAnimations');
+    button.style.cssText = "background-color: red;"
 }
 /*<input type="button" value="Cylon" class="animButtons" onclick="sendMsg('a:cylon')">
             <input type="button" value="Cycle" class="animButtons" onclick="sendMsg('a:cycle')">

@@ -14,6 +14,7 @@
 #define USEOTA
 //local webserver port
 #define PORT 80
+#define SYNCPORT 420
 //probably unessicary and pretty insecure but its here :))))
 #define USEUPNP
 #define UPNP_PORT 6996 //port for upnp to forward and websever to be on, will NOT overwrite local port

@@ -10,38 +10,12 @@
     
     <body>
       <div id="page">
-        <h1 id="deviceName">Loading...</h1>
-        <div class="content">
-          <div id="battery">
-            <h3>Battery:</h3>
-            <p id="batP">100%</p>
-          </div>
-        <div id="power">
-          <h3>Power</h3>
-            <label class="switch">
-            <input type="checkbox" class="sliderSwitch" id="powerSwitch" onclick="sendMsg('p:'+this.checked.toString())">
-            <span class="sliderSwitch round" id="powerSwitch"></span>
-            </label>
-        </div>
-        <div class="slidecontainer">
-          <h3>Brightness:</h3>
-          <input type="range" min="5" max="255" value="100" id="bright" class="slide" oninput="sendMsg('b:'+this.value.toString())">
-        </div>
-        <div id="static">
-            <h3 for="colorpicker">Color Picker:</h3>
-            <input type="color" id="colorpicker" value="#000000" style="position: relative; scale: 200%;" oninput="sendMsg('c:'+this.value.toString())"> 
-        </div>
-      </div>
-      <input type="button" value="Reconnect to Network" class="animButtons" id="recon" onclick="sendMsg('w:recon')">
-  <div id="sleep">
-    <h3>Sleep</h3>
-  <input type="button" value="Enter Sleep Mode" class="animButtons" id="slp" onclick="sendMsg('sleep:Sleep')">
-  </div>
+          
       </div>
     </body>
     <div id="nav">
       <ul class="navBar">
-        <li class="navLink"><button class="navButton" style="background-color: red;" onclick="switchPage('home', this)">Home</button></li>
+        <li class="navLink"><button class="navButton" style="background-color: red;" id='hb' onclick="switchPage('home', this)">Home</button></li>
         <li class="navLink"><button class="navButton" onclick="switchPage('anims', this)">Animations</button></li>
         <li class="navLink"><button class="navButton" onclick="switchPage('timer', this)">Timer</button></li>
       </ul>

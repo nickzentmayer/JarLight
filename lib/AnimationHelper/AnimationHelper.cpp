@@ -155,6 +155,20 @@ void AnimationHelper::setPixelColor(int p, uint32_t c, bool sho) {
 void AnimationHelper::show() {
     strip->Show();
 }
+void AnimationHelper::setPrimeAnimColor(byte r, byte g, byte b) {
+    primaryAnimColor = ((uint32_t)r << 16) + ((uint32_t)g << 8) + (b);
+}
+    
+void AnimationHelper::setSecAnimColor(byte r, byte g, byte b) {
+    secondaryAnimColor = ((uint32_t)r << 16) + ((uint32_t)g << 8) + (b);
+}
+uint32_t AnimationHelper::getPrimeAnimColor() {
+    return primaryAnimColor;
+}
+    
+uint32_t AnimationHelper::getSecAnimColor() {
+    return secondaryAnimColor;
+}
 uint32_t AnimationHelper::getPixelColor(int p) {
     return (uint32_t)HtmlColor(strip->GetPixelColor(p)).Color;
 }
