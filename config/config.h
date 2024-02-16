@@ -31,12 +31,12 @@
 #define PIXELTYPE NeoGrbFeature
 #define PIXELSPEED Neo800KbpsMethod
 //mpu config
-#define USEMPU //comment out if not connected to mpu6500
+//#define USEMPU //comment out if not connected to mpu6500
 #define MPUINT D3
 #define MPUADDR 0x68
 #define MPUTHRESHOLD 125
 //battery config, comment out to not use battery
-#define BATTPIN D0
+//#define BATTPIN D0
 
 //time config
 #define TIMEZONE -5
