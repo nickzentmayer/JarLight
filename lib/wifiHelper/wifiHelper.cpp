@@ -13,6 +13,8 @@ bool recon = false;
 bool timers = false;
 bool sync_ = false;
 int syncNum = 0;
+FifoBuffer<String> buff;
+
 
 
 Timer* timerOn = nullptr;
@@ -357,7 +359,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     String msg = String((char *)data);
     bool relay = true;
     if(msg.startsWith("j:")) {
-      if(!sync_) return;
+      if(!sync_) {
+        server->text(id, "nah");
+        return;
+      }
       msg = msg.substring(msg.indexOf(":") + 1);
       relay = false;
     }
@@ -370,11 +375,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       updateClients();
     }
     else {
-      if(sync_ && relay) 
-        {
-        for(int i = 0; i < syncNum; i++) syncer[i].sendTXT("j:" + msg);
-        }
-        parseMsg(msg);
+      if(sync_ && relay) for(int i = 0; i < syncNum; i++) syncer[i].sendTXT("j:" + msg);
+      buff.add(msg);
     }
   }
 }
@@ -484,6 +486,7 @@ tinyUPnP->updatePortMappings(600000);
 EasyDDNS.update(10000);
 #endif
   ws.cleanupClients();
+  while(buff.available()) parseMsg(buff.read());
   if(sync_) for(int i = 0; i < syncNum; i++) syncer[i].loop();
   if (!WiFi.isConnected() && WiFi.getMode() == WIFI_STA)
   {

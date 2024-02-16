@@ -1,5 +1,5 @@
 //config file, using seeed studio xiao esp32c3 
-#define DEVICE_NAME "Dorm Lights" //Caps and spaces allowed, dont uses symbols
+#define DEVICE_NAME "Jar Light" //Caps and spaces allowed, dont uses symbols
 
 //enable serial monitor (disable for production, espeacially esp's with USB (S3, C3, S2, etc.))
 #define DEBUG
@@ -26,8 +26,8 @@
 #define DDNS_SERVICE "duckdns"
 #endif
 //led config
-#define NUMLEDS 400
-#define DATAPIN 12
+#define NUMLEDS 68
+#define DATAPIN D10
 #define PIXELTYPE NeoGrbFeature
 #define PIXELSPEED Neo800KbpsMethod
 //mpu config

@@ -8,6 +8,7 @@
 #include "AnimationHelper.h"
 #include "Timer.h"
 #include <time.h>
+#include "FifoBuffer.h"
 #ifdef USEUPNP
 #include <TinyUPnP.h>
 #endif
