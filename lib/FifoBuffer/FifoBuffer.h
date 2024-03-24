@@ -47,7 +47,8 @@ template <class T> T FifoBuffer<T>::peek(int index) {
 }
 
 template <class T> T FifoBuffer<T>::read() {
-    return array[pos++];
+    if(pos < end) return array[pos++];
+    else return (T)NULL;
 }
 
 template <class T> T* FifoBuffer<T>::read(int num) {

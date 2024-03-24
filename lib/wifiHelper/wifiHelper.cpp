@@ -151,7 +151,7 @@ bool wifiSetup(AnimationHelper *s)
   ws.onEvent(wsOnEvent);
   server.addHandler(&ws);
   MDNS.addService("http", "tcp", PORT);
-  MDNS.addService("JLED", "udp", SYNCPORT);
+  MDNS.addService("JLED", "tcp", SYNCPORT);
   tm timeOn = getTimer(SPIFFS, "on");
   tm timeOff = getTimer(SPIFFS, "off");
   if(timeOn.tm_hour != 69) {
@@ -222,19 +222,25 @@ void wsOnEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
 void updateSync() {
   int l = syncNum;
-      syncNum = MDNS.queryService("JLED", "udp");
+      syncNum = MDNS.queryService("JLED", "tcp");
       if(syncNum != l) {
         if(syncer != nullptr) for(int i = 0; i < l; i++) syncer[i].disconnect();
         delete syncer;
         syncer = new WebSocketsClient[syncNum]();
         for(int i = 0; i < syncNum; i++) {
           syncer[i].begin(MDNS.IP(i), 80, "/ws");
-          syncer[i].setReconnectInterval(5000);
+          syncer[i].setReconnectInterval(3000);
         }
       }
 }
 
 void parseMsg(String msg) {
+  bool relay = true;
+    if(msg.startsWith("j:")) {
+      msg = msg.substring(msg.indexOf(":") + 1);
+      relay = false;
+    }
+  if(sync_ && relay) for(int i = 0; i < syncNum; i++) syncer[i].sendTXT("j:" + msg);
   String value = msg.substring(msg.indexOf(":") + 1);
     if (msg.startsWith("p:"))
     {
@@ -357,15 +363,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
     
     data[len] = 0;
     String msg = String((char *)data);
-    bool relay = true;
-    if(msg.startsWith("j:")) {
-      if(!sync_) {
-        server->text(id, "nah");
-        return;
-      }
-      msg = msg.substring(msg.indexOf(":") + 1);
-      relay = false;
-    }
+    
     if (msg.equals("getAnimations"))
     {
       for (int i = 0; i < strp->getNumberAnimations(); i++)
@@ -375,7 +373,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, uint32_t id, A
       updateClients();
     }
     else {
-      if(sync_ && relay) for(int i = 0; i < syncNum; i++) syncer[i].sendTXT("j:" + msg);
       buff.add(msg);
     }
   }
@@ -467,15 +464,18 @@ void updateClients() {
 void handleWiFi()
 {
 
-  static unsigned long t = millis();
-  if (millis() - t > 30000)
+  static uint64_t t = esp_timer_get_time();
+  if (esp_timer_get_time() - t > 30 * 1000000)
   {
     #ifdef BATTPIN
     sendBattery();
     #endif
-    if(sync_)updateSync();
+    if(sync_) {
+      updateSync();
+      }
     t = millis();
   }
+
 #ifdef USEOTA
   ArduinoOTA.handle();
 #endif
